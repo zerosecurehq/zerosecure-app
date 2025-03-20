@@ -28,7 +28,7 @@ const Sidebar = () => {
             <div className="flex items-center gap-2">
               <div className="w-12 h-14 relative">
                 <img src="https://avatar.iran.liara.run/public/34" alt="Avatar" />
-                <div className="absolute top-0 right-0 w-6 h-6 bg-green-300 rounded-full text-sm flex items-center justify-center">
+                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-300 rounded-full text-sm flex items-center justify-center">
                   1/1
                 </div>
               </div>
