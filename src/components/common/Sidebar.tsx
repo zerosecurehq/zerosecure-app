@@ -1,4 +1,4 @@
-import { ArrowUpDown, ChevronLeft, ChevronRight, Coins, Contact, Copy, HelpCircle, Home, LayoutGrid, LogOut, Settings, Sparkles } from "lucide-react"
+import { ArrowUpDown, ChevronLeft, ChevronRight, Coins, Contact, Copy, HelpCircle, Home, LayoutGrid, LogOut, Settings, Sparkles, User } from "lucide-react"
 import { useState } from "react"
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
@@ -9,7 +9,8 @@ const SIDEBAR_ITEMS = [
   { name: "Transactions", icon: ArrowUpDown, href: "/transactions" },
   { name: "Address book", icon: Contact, href: "/address-book" },
   { name: "App", icon: LayoutGrid, href: "/app" },
-  { name: "Settings", icon: Settings, href: "/settings" }
+  { name: "Settings", icon: Settings, href: "/settings" },
+  { name: "Account", icon: User, href: "/account" },
 ]
 
 const Sidebar = () => {
@@ -65,7 +66,7 @@ const Sidebar = () => {
         </div>
         <nav className="mt-1 flex-grow">
           <div className="border-t border-gray-200 flex flex-col justify-between">
-            <div className="p-1">
+            <div className="p-1 overflow-y-auto">
               {SIDEBAR_ITEMS?.map((item) => (
                 <Link key={item?.href} to={item?.href} onClick={() => setSelectedTab(item.name)}>
                   <motion.div className={`flex items-center p-3 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors mb-1 ${selectedTab === item.name && "bg-gray-300"}`}

@@ -9,6 +9,7 @@ import Apps from "./pages/dashboard/Apps"
 import Settings from "./pages/dashboard/Settings"
 import WhatNew from "./pages/dashboard/WhatNew"
 import NeedHelp from "./pages/dashboard/NeedHelp"
+import Account from "./pages/dashboard/Account"
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="settings" element={<Settings />} />
         <Route path="what-new" element={<WhatNew />} />
         <Route path="need-help" element={<NeedHelp />} />
+        <Route path="account" element={<Account />} />
       </Route>
     </Routes>
     </main>

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 
 const Header = ({ isConnected }: { isConnected: boolean }) => {
   return (
-    <header className="bg-white shadow-md flex items-center justify-between fixed top-0 left-0 w-full h-16">
+    <header className="bg-white shadow-md flex items-center justify-between fixed top-0 left-0 w-full h-16 z-20">
       <div className="text-3xl font-bold p-4">
         <Link to={'/'}>
           Safe (WALLET)
