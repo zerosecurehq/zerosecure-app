@@ -2,7 +2,7 @@ import { ArrowDown, ArrowUp } from "lucide-react"
 
 const Home = () => {
   return (
-    <section className="bg-gray-100 w-full overflow-scroll">
+    <section className="bg-gray-100 w-full overflow-auto">
       <div className="w-full bg-orange-100 p-5 text-lg">
         ALWAYS <span className="font-semibold">verify transactions </span>that you are approving onyour signer wallet. If you can't verify it, dont't sign it
       </div>

@@ -6,7 +6,7 @@ const Assets = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <section className="bg-gray-100 w-full overflow-scroll relative">
+    <section className="bg-gray-100 w-full overflow-x-hidden overflow-y-auto relative">
       <div className="flex items-center justify-center h-full p-20">
         <div className="p-10 bg-white w-full grid grid-cols-2 shadow-md rounded-md relative">
           <div className="absolute inset-x-0 h-2 bg-gray-300" />

@@ -1,6 +1,15 @@
-import { Coins, Link, Plus, X } from "lucide-react"
+import { ChevronDown, Coins, Link, Plus, X } from "lucide-react"
+import { useState } from "react"
+
+const SELECT = [
+  {name: "Option 1", id: 1},
+  {name: "Option 2", id: 2},
+  {name: "Option 3", id: 3},
+]
 
 const NewTransaction = ({ close }: { close: () => void }) => {
+  const [openSelect, setOpenSelect] = useState(false)
+  const [seleted, setSelected] = useState(SELECT[0])
 
   return (
     <div className="absolute inset-0 bg-gray-200 flex justify-center items-center">
@@ -21,7 +30,7 @@ const NewTransaction = ({ close }: { close: () => void }) => {
         <div className="col-span-1" />
         <div className="col-span-2 bg-white rounded-md relative">
           <div className="absolute inset-x-0 h-2 bg-gray-300" />
-          <div className="absolute left-0 top-0 w-1/4 h-2 bg-green-400" />
+          <div className="absolute left-0 top-0 w-1/2 h-2 bg-green-400" />
           <div>
             <div className="p-5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-4">
@@ -55,15 +64,24 @@ const NewTransaction = ({ close }: { close: () => void }) => {
                 <div className="absolute py-3 px-5 bg-gray-300 rounded-md font-semibold right-3 top-1/2 -translate-y-1/2">Max</div>
               </div>
               <div className="w-1/3 rounded-tr-md rounded-br-md p-2 border border-gray-300 border-l-transparent">
-                <div className="bg-gray-300 h-full rounded-md flex items-center p-3 gap-2 w-full">
+                <div className="bg-gray-300 h-full rounded-md flex items-center px-3 py-1 gap-2 w-full relative">
                   <Link className="text-purple-600 rotate-90" />
-                  <select className="flex-1 focus:outline-none bg-gray-300 text-lg">
-                    <option disabled selected>
-                      <div>Choose</div>
-                    </option>
-                    <option>Darth Vader</option>
-                    <option>Greedo</option>
-                  </select>
+                  <div className="flex-1 flex items-center justify-between cursor-pointer" onClick={() => setOpenSelect(!openSelect)}>
+                    <div className="text-sm" >
+                      <div>{seleted.name}</div>
+                    </div>
+                    <ChevronDown size={16} />
+                  </div>
+                  {openSelect && (
+                    <div className="absolute top-full left-0 w-full mt-1 bg-gray-300 p-1 rounded-md space-y-1">
+                    {SELECT.map((item) => (
+                      <div key={item.id} className="bg-white p-1 rounded-md hover:bg-gray-200 cursor-pointer" onClick={() => {
+                        setSelected(item)
+                        setOpenSelect(false)
+                      }}>{item.name}</div>
+                    ))}
+                  </div>
+                  )}
                 </div>
               </div>
             </div>
