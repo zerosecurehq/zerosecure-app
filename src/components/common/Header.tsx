@@ -1,63 +1,80 @@
-import { Bell, ChevronDown, Layers, Waves } from "lucide-react"
-import { Link } from "react-router-dom"
+import {
+  ArrowUpDown,
+  Bell,
+  ChevronDown,
+  Coins,
+  Home,
+  User,
+  Wallet,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import ZeroIcon from "./ZeroIcon";
+import { Button } from "../ui/button";
+import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
+import "@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css";
+import { Badge } from "../ui/badge";
+
+const NAVIGATE_PAGES = [
+  { name: "Home", icon: Home, href: "/" },
+  { name: "Transactions", icon: ArrowUpDown, href: "/transactions" },
+  { name: "Account", icon: User, href: "/connect" },
+];
 
 const Header = ({ isConnected }: { isConnected: boolean }) => {
   return (
-    <header className="bg-white shadow-md flex items-center justify-between fixed top-0 left-0 w-full h-16 z-20">
+    <header className="bg-white border-b-gray-200 border-b flex items-center justify-between fixed top-0 left-0 w-full h-16 z-20">
       <div className="text-3xl font-bold p-4">
-        <Link to={'/'}>
-          Safe (WALLET)
+        <Link className="flex items-center" to={"/"}>
+          {" "}
+          <ZeroIcon width={30} height={30} />
+          <span className="ml-2">
+            Zero<span className="text-blue-500">Secure</span>
+          </span>
         </Link>
+      </div>
+      <div className="flex flex-1 justify-center">
+        {" "}
+        {NAVIGATE_PAGES?.map((item) => (
+          <Button key={item.name} asChild variant="ghost" className="mx-1">
+            <Link to={item.href} className="flex items-center p-3 rounded-lg">
+              <div className="flex items-center gap-2">
+                <item.icon size={20} />
+                <div>{item.name}</div>
+              </div>
+            </Link>
+          </Button>
+        ))}
       </div>
       <div className="flex items-center h-full">
         <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer hover:bg-gray-200">
           <Bell />
         </div>
+        {isConnected && (
+          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200">
+            <div className="w-12 h-12 relative bg-gradient-primary rounded-xl"></div>
+            <div className="text-sm flex-1">
+              <div className="font-semibold text-center">
+                <Badge>Wallet 1</Badge>
+              </div>
+              <div className="text-sm mt-1">multisig: aleo12a...ss2s</div>
+            </div>
+            <ChevronDown />
+          </div>
+        )}
 
-        <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer hover:bg-gray-200">
-          <Layers />
+        <div className="mx-2">
+          <WalletMultiButton
+            // startIcon={<Wallet size={16} />}
+            style={{
+              backgroundColor: "transparent",
+              color: "black",
+              fontSize: ".9rem",
+            }}
+          />
         </div>
-
-        {isConnected && (
-          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer hover:bg-gray-200">
-            <Waves />
-          </div>
-        )}
-
-        {isConnected && (
-          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200">
-            <div className="w-12 h-14 relative">
-              <img src="https://avatar.iran.liara.run/public/34" alt="Avatar" />
-            </div>
-            <div className="text-sm flex-1">
-              <div className="font-semibold">eth: 0x...</div>
-              <div className="font-semibold">0 ETH</div>
-            </div>
-            <ChevronDown />
-          </div>
-        )}
-
-        {isConnected && (
-          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200">
-            <div className="w-12 h-14 relative">
-              <img src="https://avatar.iran.liara.run/public/34" alt="Avatar" />
-            </div>
-            <div className="text-sm flex-1">
-              <div className="font-semibold">Polygon</div>
-              <div className="font-semibold">$ 0</div>
-            </div>
-            <ChevronDown />
-          </div>
-        )}
-
-        {!isConnected && (
-          <div className="h-full flex items-center justify-center p-5">
-            <button className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition">Connect</button>
-          </div>
-        )}
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
