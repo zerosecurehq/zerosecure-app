@@ -29,29 +29,45 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
+import { useCreateMultisigWallet } from "zerosecurehq-sdk";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
-interface option {
-  name: string;
-  id: number;
-}
-
-interface signer {
-  id: number;
+interface Signer {
   name: string;
   address: string;
 }
 
 const NewAccountButton = () => {
-  const [selectedOpen, setSelectOpen] = useState(false);
-  const [selected, setSelected] = useState<option[]>([]);
+  const { publicKey } = useWallet();
   const [currentStep, setCurrentStep] = useState(1);
-  const [signer, setSigner] = useState<signer>({
-    name: "",
-    address: "",
-    id: 1,
-  });
-  const [signerList, setSignerList] = useState<signer[]>([]);
-  const [checked, setChecked] = useState(false);
+  const [signerList, setSignerList] = useState<Signer[]>([]);
+  const [newSigner, setNewSigner] = useState<Signer>({ name: "", address: "" });
+  const [threshold, setThreshold] = useState("1");
+  const { createMultisigWallet, error, isProcessing, txId, reset } =
+    useCreateMultisigWallet();
+
+  const handleCreateMultiWallet = async () => {
+    try {
+      await createMultisigWallet({
+        owners: [
+          publicKey as string,
+          ...signerList.map((signer) => signer.address),
+        ],
+        threshold: Number(threshold),
+      });
+      if (error) {
+        toast(`Error creating wallet ${error.message}`);
+      }
+      reset();
+      toast("Wallet created successfully");
+      setNewSigner({ name: "", address: "" });
+      setSignerList([]);
+    } catch (error) {
+      console.log(`Error in createMultiWallet: ${error}`);
+    }
+  };
 
   return (
     <Dialog>
@@ -60,7 +76,7 @@ const NewAccountButton = () => {
           <Plus /> New Account
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Create a new account</DialogTitle>
           <DialogDescription>
@@ -143,58 +159,138 @@ const NewAccountButton = () => {
                 {currentStep === 2 && (
                   <>
                     <div className="px-4 py-5 border-b border-gray-300">
-                      <div className="space-y-5">
-                        {[...Array(signerList.length + 1)].map((_, idx) => (
-                          <div key={idx} className="flex items-center gap-3 ">
-                            <div className="w-full relative border border-gray-300 rounded-md p-4 space-y-1.5">
-                              <Label>Signer 1</Label>
-                              <Input
-                                placeholder="Signer Name"
-                                className="w-1/3"
-                              />
-                              <Input placeholder="Signer Wallet: aleo12s.asc" />
-                              <div className="flex justify-end space-x-1.5">
-                                <Button variant={"ghost"}>
-                                  <Trash />
-                                </Button>
-                                <Button variant={"ghost"}>
-                                  <UserRoundPlus />
-                                </Button>
-                              </div>
+                      <div className="space-y-5 max-h-[300px] overflow-y-auto">
+                        {signerList.length > 0 &&
+                          signerList.map((signer, idx) => (
+                            <div key={idx} className="relative w-full">
+                              <Card className="shadow-sm hover:shadow-md transition-shadow border border-gray-200 rounded-lg p-3 pr-8 relative">
+                                <CardHeader className="p-0 mb-1">
+                                  <CardTitle className="text-xs font-semibold text-gray-700">
+                                    Signer {idx + 1}
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0 space-y-1">
+                                  <p className="text-sm font-medium text-gray-800 truncate">
+                                    Signer name: {signer.name}
+                                  </p>
+                                  <p className="text-sm text-gray-500 truncate">
+                                    Signer wallet: {signer.address}
+                                  </p>
+                                </CardContent>
+                              </Card>
+
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500 hover:text-red-700"
+                                onClick={() =>
+                                  setSignerList(
+                                    signerList.filter((_, i) => i !== idx)
+                                  )
+                                }
+                              >
+                                <Trash size={14} />
+                              </Button>
                             </div>
-                            {signerList.length > 1 && (
-                              <div className="hover:text-red-500 cursor-pointer">
-                                <Trash size={16} />
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </div>
-                    <div className="px-14 py-5 border-b border-gray-300 space-y-5">
+
+                    <div className="px-4 py-3 space-y-3">
+                      <Label>Add Signer</Label>
+                      <Input
+                        placeholder="Signer Name"
+                        className="w-full"
+                        value={newSigner.name}
+                        onChange={(e) =>
+                          setNewSigner((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
+                      />
+
+                      <Input
+                        placeholder="Signer Wallet: aleo12s.asc"
+                        className="w-full"
+                        value={newSigner.address}
+                        onChange={(e) =>
+                          setNewSigner((prev) => ({
+                            ...prev,
+                            address: e.target.value,
+                          }))
+                        }
+                      />
+
+                      <Button
+                        variant="ghost"
+                        className="w-full flex justify-center"
+                        onClick={() => {
+                          if (
+                            !newSigner.name.trim() ||
+                            !newSigner.address.trim()
+                          ) {
+                            toast(
+                              "Please enter signer name and address before adding!"
+                            );
+                            return;
+                          }
+
+                          if (
+                            signerList.some(
+                              (s) => s.address === newSigner.address
+                            )
+                          ) {
+                            toast("This address already exists!");
+                            return;
+                          }
+
+                          if (signerList.length >= 7) {
+                            toast("Maximum 8 signers allowed!");
+                            return;
+                          }
+
+                          setSignerList([...signerList, newSigner]);
+                          setNewSigner({ name: "", address: "" });
+                        }}
+                      >
+                        <UserRoundPlus /> Add Signer
+                      </Button>
+                    </div>
+
+                    <div className="px-14 py-5 border-t border-gray-300 space-y-5">
                       <div>
                         <div className="flex items-center gap-3">
                           <h3 className="font-bold text-lg">Threshold</h3>
                           <AlertCircle size={16} className="text-gray-500" />
                         </div>
-                        <p className="">
-                          Choose your multisig-wallet threshold
-                        </p>
+                        <p>Choose your multisig-wallet threshold</p>
                       </div>
 
                       <div className="flex items-center">
-                        <Select>
+                        <Select
+                          onValueChange={(value) => {
+                            if (parseInt(value) > signerList.length) {
+                              toast(
+                                "Threshold must be less than or equal to the number of signers"
+                              );
+                              return;
+                            }
+                            setThreshold(value);
+                          }}
+                          value={threshold}
+                        >
                           <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Set your threshold" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Threshold</SelectLabel>
-                              <SelectItem value="1">1</SelectItem>
-                              <SelectItem value="2">2</SelectItem>
-                              <SelectItem value="3">3</SelectItem>
-                              <SelectItem value="4">4</SelectItem>
-                              <SelectItem value="5">5</SelectItem>
+                              {[...Array(8)].map((_, i) => (
+                                <SelectItem key={i} value={String(i + 1)}>
+                                  {i + 1}
+                                </SelectItem>
+                              ))}
                             </SelectGroup>
                           </SelectContent>
                         </Select>
@@ -219,29 +315,35 @@ const NewAccountButton = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-1/3">Signers</div>
                         <div className="w-2/3 space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-md bg-gradient-primary" />
-                            <div className="flex-1 truncate">0x1230000000</div>
-                            <div className="flex items-center gap-2 text-gray-500">
-                              <Copy className="cursor-pointer" size={16} />
-                              <Share className="cursor-pointer" size={16} />
+                          {signerList.map((signer, idx) => (
+                            <div className="flex items-center gap-2" key={idx}>
+                              <div className="w-8 h-8 rounded-md bg-gradient-primary" />
+                              <div className="flex-1 truncate">
+                                {signer.address}
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-500">
+                                <Copy
+                                  className="cursor-pointer"
+                                  size={16}
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(
+                                      signer.address
+                                    );
+                                    toast("Copied to clipboard");
+                                  }}
+                                />
+                                <Share className="cursor-pointer" size={16} />
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-md bg-gradient-primary" />
-                            <div className="flex-1 truncate">0x1230000000</div>
-                            <div className="flex items-center gap-2 text-gray-500">
-                              <Copy className="cursor-pointer" size={16} />
-                              <Share className="cursor-pointer" size={16} />
-                            </div>
-                          </div>
+                          ))}
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <div className="w-1/3">Threshold</div>
                         <div className="w-2/3 font-semibold">
-                          <Badge>1</Badge> / 1 signer
+                          <Badge>{threshold}</Badge> / {signerList.length + 1}{" "}
+                          signer
                         </div>
                       </div>
                     </div>
@@ -285,7 +387,17 @@ const NewAccountButton = () => {
                       variant={"outline"}
                       onClick={() => {
                         if (currentStep < 4) {
+                          if (
+                            currentStep === 2 &&
+                            (signerList.length === 0 || threshold === "")
+                          ) {
+                            toast("Please enter one singer");
+                            return;
+                          }
                           setCurrentStep(currentStep + 1);
+                        }
+                        if (currentStep === 3) {
+                          handleCreateMultiWallet();
                         }
                       }}
                     >

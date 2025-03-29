@@ -3,13 +3,6 @@ import History from "../../components/dashboard/transactions/History";
 import Executing from "@/components/dashboard/transactions/Executing";
 import Warning from "@/components/ui/Warning";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -29,31 +22,13 @@ const Transactions = () => {
         <Tabs defaultValue="signing">
           <div className="flex items-center justify-between gap-2 mb-8">
             <TabsList className="grid w-[400px] grid-cols-3 space-x-3 bg-gray-200">
-              <TabsTrigger value="signing">
-                Signing
-              </TabsTrigger>
-              <TabsTrigger value="excute">
-                Excute
-              </TabsTrigger>
-              <TabsTrigger value="history">
-                History
-              </TabsTrigger>
+              <TabsTrigger value="signing">Signing</TabsTrigger>
+              <TabsTrigger value="excute">Excute</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-4">
-              <div className="flex items-center space-x-2">
-                <Switch id="hideSuspicious" />
-                <Label htmlFor="hideSuspicious">Hide Suspicious</Label>
-              </div>
-              <Select>
-                <SelectTrigger className="w-fit">
-                  <SelectValue placeholder="Filter" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System</SelectItem>
-                </SelectContent>
-              </Select>
+              <Switch id="hideSuspicious" />
+              <Label htmlFor="hideSuspicious">Hide Suspicious</Label>
             </div>
           </div>
           <TabsContent value="signing">

@@ -1,18 +1,11 @@
-import {
-  ArrowUpDown,
-  Bell,
-  ChevronDown,
-  Coins,
-  Home,
-  User,
-  Wallet,
-} from "lucide-react";
+import { ArrowUpDown, Bell, ChevronDown, Home, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import ZeroIcon from "./ZeroIcon";
 import { Button } from "../ui/button";
 import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 import "@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css";
 import { Badge } from "../ui/badge";
+import useAccount from "@/stores/useAccount";
 
 const NAVIGATE_PAGES = [
   { name: "Home", icon: Home, href: "/" },
@@ -20,7 +13,9 @@ const NAVIGATE_PAGES = [
   { name: "Account", icon: User, href: "/connect" },
 ];
 
-const Header = ({ isConnected }: { isConnected: boolean }) => {
+const Header = () => {
+  const { selectedWallet } = useAccount();
+
   return (
     <header className="bg-white border-b-gray-200 border-b flex items-center justify-between fixed top-0 left-0 w-full h-16 z-20">
       <div className="text-3xl font-bold p-4">
@@ -35,7 +30,14 @@ const Header = ({ isConnected }: { isConnected: boolean }) => {
       <div className="flex flex-1 justify-center">
         {" "}
         {NAVIGATE_PAGES?.map((item) => (
-          <Button key={item.name} asChild variant="ghost" className="mx-1">
+          <Button
+            key={item.name}
+            asChild
+            variant="ghost"
+            className={`mx-1 ${
+              !selectedWallet && item.name !== "Account" && "hidden"
+            }`}
+          >
             <Link to={item.href} className="flex items-center p-3 rounded-lg">
               <div className="flex items-center gap-2">
                 <item.icon size={20} />
@@ -49,17 +51,22 @@ const Header = ({ isConnected }: { isConnected: boolean }) => {
         <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer hover:bg-gray-200">
           <Bell />
         </div>
-        {isConnected && (
+        {selectedWallet && (
           <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200">
-            <div className="w-12 h-12 relative bg-gradient-primary rounded-xl"></div>
-            <div className="text-sm flex-1">
-              <div className="font-semibold text-center">
-                <Badge>Wallet 1</Badge>
-              </div>
-              <div className="text-sm mt-1">multisig: aleo12a...ss2s</div>
+          <div className="w-12 h-12 relative bg-gradient-primary rounded-xl"></div>
+          <div className="text-sm flex-1">
+            <div className="font-semibold text-center">
+              <Badge>Wallet 1</Badge>
             </div>
-            <ChevronDown />
+            <div className="text-sm mt-1 flex items-center justify-between gap-2">
+              <span className="text-gray-600">multisig:</span>
+              <span className="truncate max-w-[140px] text-gray-900">
+                {selectedWallet.data.wallet_address}
+              </span>
+            </div>
           </div>
+          <ChevronDown />
+        </div>        
         )}
 
         <div className="mx-2">

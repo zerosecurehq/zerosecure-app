@@ -160,9 +160,11 @@ const DepositButton = ({
   text?: string;
   className?: string;
 }) => {
-  let [step, setStep] = useState(1);
-  let [feeType, setFeeType] = useState<"public" | "private">("public");
-  let [depositType, setDepositType] = useState<"public" | "private">("public");
+  const [step, setStep] = useState(1);
+  const [feeType, setFeeType] = useState<"public" | "private">("public");
+  const [depositType, setDepositType] = useState<"public" | "private">(
+    "public"
+  );
   return (
     <Dialog>
       <DialogTrigger asChild>

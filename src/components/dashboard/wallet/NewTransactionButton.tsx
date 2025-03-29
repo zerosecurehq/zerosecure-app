@@ -12,8 +12,17 @@ import {
 } from "@/components/ui/dialog";
 
 import { useState } from "react";
+import { useCreateTransaction } from "zerosecurehq-sdk";
+import { toast } from "sonner";
+import useAccount from "@/stores/useAccount";
 
-const Page1 = () => {
+const Page1 = ({
+  setAmount,
+  setRecipient,
+}: {
+  setAmount: (amount: string) => void;
+  setRecipient: (address: string) => void;
+}) => {
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
       <Warning
@@ -23,11 +32,18 @@ const Page1 = () => {
       />
       <div className="flex- space-y-1.5">
         <Label>Recipient address</Label>
-        <Input placeholder="aleo1qz8...da2s" />
+        <Input
+          placeholder="aleo1qz8...da2s"
+          onChange={(e) => setRecipient(e.target.value)}
+        />
       </div>
       <div className="flex- space-y-1.5">
         <Label>Amount</Label>
-        <Input type="number" placeholder="0" />
+        <Input
+          type="number"
+          placeholder="0"
+          onChange={(e) => setAmount(e.target.value)}
+        />
       </div>
     </div>
   );
@@ -36,9 +52,13 @@ const Page1 = () => {
 const Page2 = ({
   feeType,
   setFeeType,
+  recipient,
+  amount,
 }: {
   feeType: "public" | "private";
   setFeeType: (type: "public" | "private") => void;
+  recipient: string;
+  amount: string;
 }) => {
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
@@ -50,7 +70,7 @@ const Page2 = ({
       <div className="w-full flex justify-center items-center ">
         <div className="p-1 rounded-md text-3xl">
           {" "}
-          <span className="font-semibold">12</span>
+          <span className="font-semibold">{amount}</span>
           <span className="text-xl font-mono">.44 Aleo</span>
         </div>
       </div>
@@ -76,7 +96,7 @@ const Page2 = ({
             maskImage: "linear-gradient(90deg, transparent, #ccc, transparent)",
           }}
         ></div>
-        <span>aleo12a...ss2s</span>
+        <span>{recipient}</span>
       </div>
       <div className="w-full flex items-center">
         <span className="opacity-75">Execution Fee</span>
@@ -147,8 +167,21 @@ const NewTransactionButton = ({
   text?: string;
   className?: string;
 }) => {
-  let [step, setStep] = useState(1);
-  let [feeType, setFeeType] = useState<"public" | "private">("public");
+  const [step, setStep] = useState(1);
+  const [feeType, setFeeType] = useState<"public" | "private">("public");
+  const { selectedWallet } = useAccount();
+  const [recipient, setRecipient] = useState("");
+  const [amount, setAmount] = useState("");
+  const { createTransaction, error, isProcessing, reset, txId } =
+    useCreateTransaction();
+
+  const handleCreateTransaction = async () => {
+    await createTransaction(selectedWallet!, recipient, Number(amount));
+    reset();
+    setAmount("");
+    setRecipient("");
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -168,8 +201,17 @@ const NewTransactionButton = ({
             <div className="col-span-2 bg-white rounded-md relative">
               {
                 {
-                  1: <Page1 />,
-                  2: <Page2 feeType={feeType} setFeeType={setFeeType} />,
+                  1: (
+                    <Page1 setRecipient={setRecipient} setAmount={setAmount} />
+                  ),
+                  2: (
+                    <Page2
+                      feeType={feeType}
+                      setFeeType={setFeeType}
+                      recipient={recipient}
+                      amount={amount}
+                    />
+                  ),
                   3: <Page3 />,
                 }[step]
               }
@@ -178,7 +220,16 @@ const NewTransactionButton = ({
                 <div className="flex justify-between flex-row-reverse">
                   {step <= 2 && (
                     <Button
-                      onClick={() => setStep(step + 1)}
+                      onClick={() => {
+                        if (step === 1 && (recipient === "" || amount === "")) {
+                          toast("Please fill out all the fields.");
+                          return;
+                        }
+                        if (step === 2) {
+                          handleCreateTransaction();
+                        }
+                        setStep(step + 1);
+                      }}
                       variant={"outline"}
                     >
                       Next

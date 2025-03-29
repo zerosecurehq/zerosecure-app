@@ -7,6 +7,9 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
+import { ExecuteTicketRecord, useGetExecuteTicket } from "zerosecurehq-sdk";
+import { useEffect, useState } from "react";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 
 const transactions = [
   {
@@ -51,6 +54,24 @@ const transactions = [
 ];
 
 const Signing = () => {
+  const { publicKey } = useWallet();
+  const { getExecuteTicket, error, isProcessing, reset } =
+    useGetExecuteTicket();
+  const [excute, setExcute] = useState<ExecuteTicketRecord[]>([]);
+
+  const handleGetExcute = async () => {
+    const result = await getExecuteTicket();
+    if (result !== undefined) {
+      setExcute(result);
+    }
+  };
+
+  useEffect(() => {
+    if (publicKey) {
+      handleGetExcute();
+    }
+  }, [publicKey]);
+
   return (
     <article>
       <Table>
@@ -58,15 +79,19 @@ const Signing = () => {
           A list of your wait for signing transactions.
         </TableCaption>
         <TableBody>
-          {transactions.map((transaction, index) => (
+          {excute.length === 0 && (
+            <p className="text-center mt-3">No signing transaction</p>
+          )}
+          {excute.map((item, index) => (
             <TableRow key={index} className="text-center relative">
-              <TableCell className="font-medium">{transaction.to}</TableCell>
-              <TableCell>{transaction.amount}</TableCell>
-              <TableCell>{transaction.time}</TableCell>
+              <TableCell className="font-medium">{item.data.to}</TableCell>
+              <TableCell>{item.data.amount}</TableCell>
+              {/* @TODO check field time */}
+              <TableCell>{item.data.transfer_id}</TableCell>
               <TableCell>
                 <Button variant={"outline"}>Sign Transaction</Button>
               </TableCell>
-              {transaction.signed !== transaction.signers ? (
+              {/* {transaction.signed !== transaction.signers ? (
                 <Badge
                   variant={"outline"}
                   className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full"
@@ -80,7 +105,7 @@ const Signing = () => {
                 >
                   {transaction.signed}/{transaction.signers}
                 </Badge>
-              )}
+              )} */}
             </TableRow>
           ))}
         </TableBody>

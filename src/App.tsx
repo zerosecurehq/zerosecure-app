@@ -8,7 +8,6 @@ import Apps from "./pages/dashboard/Apps";
 import Settings from "./pages/dashboard/Settings";
 import WhatNew from "./pages/dashboard/WhatNew";
 import NeedHelp from "./pages/dashboard/NeedHelp";
-import Account from "./pages/dashboard/Account";
 import { useMemo } from "react";
 import {
   PuzzleWalletAdapter,
@@ -22,8 +21,11 @@ import {
 } from "@demox-labs/aleo-wallet-adapter-base";
 import { WalletProvider } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletModalProvider } from "@demox-labs/aleo-wallet-adapter-reactui";
+import { Toaster } from "./components/ui/sonner";
+import useAccount from "./stores/useAccount";
 
 const App = () => {
+  const { selectedWallet } = useAccount();
   const wallets = useMemo(
     () => [
       new LeoWalletAdapter({
@@ -60,6 +62,7 @@ const App = () => {
     ],
     []
   );
+
   return (
     <WalletProvider
       wallets={wallets}
@@ -84,6 +87,7 @@ const App = () => {
             </Route>
           </Routes>
         </main>{" "}
+        <Toaster />
       </WalletModalProvider>
     </WalletProvider>
   );

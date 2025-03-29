@@ -7,6 +7,13 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
+import { useEffect, useState } from "react";
+import {
+  ConfirmTransferTicketRecord,
+  useApplyConfirmTransferTicket,
+  useGetConfirmTransferTicket,
+} from "zerosecurehq-sdk";
 
 const transactions = [
   {
@@ -51,6 +58,34 @@ const transactions = [
 ];
 
 const Signing = () => {
+  const { publicKey } = useWallet();
+  const { getConfirmTransferTicket, error, isProcessing, reset } =
+    useGetConfirmTransferTicket();
+  const {
+    applyConfirmTransferTicket,
+    error: errorConfirm,
+    isProcessing: isProcessingConfirm,
+    reset: resetConfirm,
+    txId: txIdConfirm,
+  } = useApplyConfirmTransferTicket();
+  const [signing, setSigning] = useState<ConfirmTransferTicketRecord[]>([]);
+
+  const handleGetSigning = async () => {
+    setSigning(await getConfirmTransferTicket());
+  };
+
+  const handleApplyConfirm = async (
+    dataConfirm: ConfirmTransferTicketRecord
+  ) => {
+    await applyConfirmTransferTicket(dataConfirm);
+  };
+
+  useEffect(() => {
+    if (publicKey) {
+      handleGetSigning();
+    }
+  }, [publicKey]);
+
   return (
     <article>
       <Table>
@@ -58,11 +93,21 @@ const Signing = () => {
           A list of your wait for signing transactions.
         </TableCaption>
         <TableBody>
-          {transactions.map((transaction, index) => (
-            <TableRow key={index} className="text-center relative">
-              <TableCell className="font-medium">{transaction.to}</TableCell>
-              <TableCell>{transaction.amount}</TableCell>
-              <TableCell>{transaction.time}</TableCell>
+          {signing.length === 0 && (
+            <p className="text-center mt-3">No signing transaction</p>
+          )}
+          {signing.map((item, index) => (
+            <TableRow
+              key={index}
+              className="text-center relative"
+              onClick={() => handleApplyConfirm(item)}
+            >
+              <TableCell className="font-medium">
+                {item?.data.to}
+              </TableCell>
+              <TableCell>{item?.data.amount}</TableCell>
+              {/* @TODO check field time */}
+              <TableCell>{item?.data.transfer_id}</TableCell>
               <TableCell>
                 <Button variant={"outline"}>Sign Transaction</Button>
               </TableCell>
