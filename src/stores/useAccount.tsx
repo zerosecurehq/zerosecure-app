@@ -12,6 +12,7 @@ interface AccountState {
   setWallets: (wallets: WalletRecordData[]) => void;
   togglePinnedWallet: (wallet: WalletRecordData) => void;
   setSelectedWallet: (wallet: WalletRecordData | null) => void;
+  resetAccount: () => void;
 }
 
 const gradients = [
@@ -22,7 +23,7 @@ const gradients = [
   "bg-gradient-to-r from-teal-500 to-cyan-500",
 ];
 
-const getRandomGradient = () =>
+export const getRandomGradient = () =>
   gradients[Math.floor(Math.random() * gradients.length)];
 
 const getLocalStorage = <T,>(key: string, defaultValue: T): T => {
@@ -74,6 +75,8 @@ const useAccount = create<AccountState>((set) => ({
       return { pinnedWallets: updatedPinned };
     });
   },
+
+  resetAccount: () => set({ wallets: [], pinnedWallets: [], selectedWallet: null }),
 }));
 
 export default useAccount;

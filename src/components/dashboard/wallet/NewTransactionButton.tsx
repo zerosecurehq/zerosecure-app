@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCreateTransaction } from "zerosecurehq-sdk";
 import { toast } from "sonner";
 import useAccount from "@/stores/useAccount";
@@ -184,20 +184,36 @@ const NewTransactionButton = ({
     // setTimeout(() => {
     //   console.log(walletWithoutAvatar, recipient, credisToMicrocredis(amount));
     // }, 1000);
-    await createTransaction(walletWithoutAvatar, recipient, credisToMicrocredis(amount));
+    const txHash = await createTransaction(
+      walletWithoutAvatar,
+      recipient,
+      credisToMicrocredis(amount)
+    );
+    if (txHash) {
+      reset();
+      setAmount("");
+      setRecipient("");
+    }
+  };
+
+  useEffect(() => {
     if (error) {
       toast.error(error.message);
+      reset();
     }
     if (txId) {
       setStep(3);
     }
-    reset();
-    setAmount("");
-    setRecipient("");
-  };
+  }, [error, txId]);
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={() => {
+      setStep(1);
+      setFeeType("public");
+      setRecipient("");
+      setAmount("");
+      reset();
+    }}>
       <DialogTrigger asChild>
         <Button variant="outline" className={className} disabled={isProcessing}>
           {isProcessing ? <Loader2 className="animate-spin" /> : text}

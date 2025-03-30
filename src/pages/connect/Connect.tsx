@@ -22,7 +22,9 @@ const Connect = () => {
         if (newWallets) setWallets(newWallets);
       }
     };
-    fetchWallets();
+    if (publicKey) {
+      fetchWallets();
+    }
   }, [wallets.length, setWallets, getWalletCreated, publicKey]);
 
   return (

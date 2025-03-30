@@ -11,7 +11,7 @@ import {
   Trash,
   UserRoundPlus,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -34,6 +34,7 @@ import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import { useCreateMultisigWallet } from "zerosecurehq-sdk";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { getRandomGradient } from "@/stores/useAccount";
 
 interface Signer {
   name: string;
@@ -60,32 +61,48 @@ const NewAccountButton = () => {
       //     threshold: Number(threshold),
       //   });
       // }, 1000);
-      await createMultisigWallet({
+      const txHash = await createMultisigWallet({
         owners: [
           publicKey as string,
           ...signerList.map((signer) => signer.address),
         ],
         threshold: Number(threshold),
       });
-      if (error) {
-        toast(`Error creating wallet ${error.message}`);
+      if (txHash) {
+        reset();
+        toast("Wallet created successfully");
+        setNewSigner({ name: "", address: "" });
+        setSignerList([]);
       }
-      if (txId) {
-        setCurrentStep(4);
-      }
-      reset();
-      toast("Wallet created successfully");
-      setNewSigner({ name: "", address: "" });
-      setSignerList([]);
     } catch (error) {
       console.log(`Error in createMultiWallet: ${error}`);
     }
   };
 
+  useEffect(() => {
+    if (error) {
+      toast(`Error creating wallet ${error.message}`);
+      reset();
+    }
+    if (txId) {
+      setCurrentStep(4);
+    }
+  }, [error, txId]);
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={() => {
+      setCurrentStep(1);
+      reset();
+      setSignerList([]);
+      setNewSigner({ name: "", address: "" });
+      setThreshold("1");
+    }}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2" disabled={isProcessing}>
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          disabled={isProcessing}
+        >
           {isProcessing ? <Loader2 className="animate-spin" /> : <Plus />}
           <div>{isProcessing ? "Processing..." : "New Account"}</div>
         </Button>
@@ -330,7 +347,9 @@ const NewAccountButton = () => {
                         <div className="w-2/3 space-y-1.5">
                           {signerList.map((signer, idx) => (
                             <div className="flex items-center gap-2" key={idx}>
-                              <div className="w-8 h-8 rounded-md bg-gradient-primary" />
+                              <div
+                                className={`w-8 h-8 rounded-md ${getRandomGradient()}`}
+                              />
                               <div className="flex-1 truncate">
                                 {signer.address}
                               </div>

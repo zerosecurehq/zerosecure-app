@@ -7,9 +7,15 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { ExecuteTicketRecord, useGetExecuteTicket } from "zerosecurehq-sdk";
+import {
+  ExecuteTicketRecord,
+  useApplyExecuteTicket,
+  useGetExecuteTicket,
+} from "zerosecurehq-sdk";
 import { useEffect, useState } from "react";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const transactions = [
   {
@@ -57,6 +63,13 @@ const Signing = () => {
   const { publicKey } = useWallet();
   const { getExecuteTicket, error, isProcessing, reset } =
     useGetExecuteTicket();
+  const {
+    applyExecuteTicket,
+    error: errorExcute,
+    isProcessing: isProcessingExcute,
+    reset: resetExcute,
+    txId: txIdExcute,
+  } = useApplyExecuteTicket();
   const [excute, setExcute] = useState<ExecuteTicketRecord[]>([]);
 
   const handleGetExcute = async () => {
@@ -66,11 +79,25 @@ const Signing = () => {
     }
   };
 
+  const handleApplyExcute = async (dataExcute: ExecuteTicketRecord) => {
+    const txHash = await applyExecuteTicket(dataExcute);
+    if (txHash) {
+      resetExcute();
+    }
+  };
+
   useEffect(() => {
     if (publicKey) {
       handleGetExcute();
     }
   }, [publicKey]);
+
+  useEffect(() => {
+    if (errorExcute) {
+      toast(`Error excute: ${errorExcute.message}`);
+      resetExcute();
+    }
+  }, [errorExcute, txIdExcute]);
 
   return (
     <article>
@@ -89,7 +116,12 @@ const Signing = () => {
               {/* @TODO check field time */}
               <TableCell>{item.data.transfer_id}</TableCell>
               <TableCell>
-                <Button variant={"outline"}>Sign Transaction</Button>
+                <Button
+                  variant={"outline"}
+                  onClick={() => handleApplyExcute(item)}
+                >
+                  {isProcessingExcute ? <Loader2 className="animate-spin" /> : "Excute"}
+                </Button>
               </TableCell>
               {/* {transaction.signed !== transaction.signers ? (
                 <Badge

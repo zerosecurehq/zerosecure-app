@@ -8,7 +8,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   ConfirmTransferTicketRecord,
   useApplyConfirmTransferTicket,
@@ -77,7 +79,10 @@ const Signing = () => {
   const handleApplyConfirm = async (
     dataConfirm: ConfirmTransferTicketRecord
   ) => {
-    await applyConfirmTransferTicket(dataConfirm);
+    const txHash = await applyConfirmTransferTicket(dataConfirm);
+    if (txHash) {
+      resetConfirm();
+    }
   };
 
   useEffect(() => {
@@ -85,6 +90,13 @@ const Signing = () => {
       handleGetSigning();
     }
   }, [publicKey]);
+
+  useEffect(() => {
+    if (errorConfirm) {
+      toast(`Error confirm ${errorConfirm.message}`);
+      resetConfirm();
+    }
+  }, [errorConfirm, txIdConfirm, resetConfirm]);
 
   return (
     <article>
@@ -97,19 +109,23 @@ const Signing = () => {
             <p className="text-center mt-3">No signing transaction</p>
           )}
           {signing.map((item, index) => (
-            <TableRow
-              key={index}
-              className="text-center relative"
-              onClick={() => handleApplyConfirm(item)}
-            >
-              <TableCell className="font-medium">
-                {item?.data.to}
-              </TableCell>
+            <TableRow key={index} className="text-center relative">
+              <TableCell className="font-medium">{item?.data.to}</TableCell>
               <TableCell>{item?.data.amount}</TableCell>
               {/* @TODO check field time */}
               <TableCell>{item?.data.transfer_id}</TableCell>
               <TableCell>
-                <Button variant={"outline"}>Sign Transaction</Button>
+                <Button
+                  variant={"outline"}
+                  onClick={() => handleApplyConfirm(item)}
+                  disabled={isProcessingConfirm}
+                >
+                  {isProcessingConfirm ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    "Sign Transaction"
+                  )}
+                </Button>
               </TableCell>
               <Badge
                 variant={"outline"}

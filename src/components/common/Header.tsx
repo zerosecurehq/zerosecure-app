@@ -53,20 +53,22 @@ const Header = () => {
         </div>
         {selectedWallet && (
           <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200">
-          <div className={`w-12 h-12 relative ${selectedWallet?.avatar} rounded-xl`}></div>
-          <div className="text-sm flex-1">
-            <div className="font-semibold text-center">
-              <Badge>Wallet 1</Badge>
+            <div
+              className={`w-12 h-12 relative ${selectedWallet?.avatar} rounded-xl`}
+            ></div>
+            <div className="text-sm flex-1">
+              <div className="font-semibold text-center">
+                <Badge>Wallet 1</Badge>
+              </div>
+              <div className="text-sm mt-1 flex items-center justify-between gap-2">
+                <span className="text-gray-600">multisig:</span>
+                <span className="truncate max-w-[140px] text-gray-900">
+                  {selectedWallet.data.wallet_address}
+                </span>
+              </div>
             </div>
-            <div className="text-sm mt-1 flex items-center justify-between gap-2">
-              <span className="text-gray-600">multisig:</span>
-              <span className="truncate max-w-[140px] text-gray-900">
-                {selectedWallet.data.wallet_address}
-              </span>
-            </div>
+            <ChevronDown />
           </div>
-          <ChevronDown />
-        </div>        
         )}
 
         <div className="mx-2">

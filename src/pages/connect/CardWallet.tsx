@@ -1,7 +1,9 @@
 import { Card } from "@/components/ui/card";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
-import { convertKey } from "@/utils";
+import { convertKey, getBalanceMultiWallet } from "@/utils";
+import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Pin, Trash2, MoreHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const CardWallet = ({
   wallet,
@@ -13,10 +15,27 @@ const CardWallet = ({
   togglePin: () => void;
 }) => {
   const { setSelectedWallet, selectedWallet } = useAccount();
+  const [balanceMultiWallet, setBalanceMultiWallet] = useState(0);
+  useEffect(() => {
+    const getBalance = async () => {
+      const result = await getBalanceMultiWallet(
+        WalletAdapterNetwork.TestnetBeta,
+        selectedWallet!.data.wallet_address
+      );
+      setBalanceMultiWallet(result);
+    };
+    if (selectedWallet) {
+      getBalance();
+    }
+  }, [selectedWallet]);
   return (
     <Card
       key={wallet.data.wallet_address}
-      className={`p-4 border rounded-xl shadow-md  hover:shadow-lg transition-shadow ${selectedWallet?.data?.wallet_address === wallet.data.wallet_address ? "pointer-events-none opacity-60" : "cursor-pointer bg-white"}`}
+      className={`p-4 border rounded-xl shadow-md  hover:shadow-lg transition-shadow ${
+        selectedWallet?.data?.wallet_address === wallet.data.wallet_address
+          ? "pointer-events-none opacity-60"
+          : "cursor-pointer bg-white"
+      }`}
       onClick={() => setSelectedWallet(wallet)}
     >
       <div className="flex items-center justify-between">
@@ -26,7 +45,7 @@ const CardWallet = ({
             <span className="font-semibold text-gray-900 truncate max-w-[160px]">
               {convertKey(wallet.data.wallet_address)}
             </span>
-            <p className="text-gray-500 text-sm">$20.21 Aleo</p>
+            <p className="text-gray-500 text-sm">${balanceMultiWallet}</p>
           </div>
         </div>
 

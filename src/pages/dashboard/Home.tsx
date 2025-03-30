@@ -2,9 +2,31 @@ import DepositButton from "@/components/dashboard/wallet/DepositButton";
 import NewTransactionButton from "@/components/dashboard/wallet/NewTransactionButton";
 import { Card, CardContent } from "@/components/ui/card";
 import Warning from "@/components/ui/Warning";
+import useAccount from "@/stores/useAccount";
 import { Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
+import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
+import { getBalanceMultiWallet } from "@/utils";
 
 const Home = () => {
+  const { publicKey } = useWallet();
+  const { selectedWallet } = useAccount();
+  const [balanceMultiWallet, setBalanceMultiWallet] = useState(0);
+
+  useEffect(() => {
+    const getBalance = async () => {
+      const result = await getBalanceMultiWallet(
+        WalletAdapterNetwork.TestnetBeta,
+        selectedWallet!.data.wallet_address
+      );
+      setBalanceMultiWallet(result);
+    };
+    if (selectedWallet) {
+      getBalance();
+    }
+  }, [selectedWallet, publicKey]);
+
   return (
     <section className="w-full overflow-auto px-28">
       <div className="p-4">
@@ -21,7 +43,7 @@ const Home = () => {
               <p className="text-sm text-muted-foreground">Current Balance</p>
               <div className="flex items-center gap-2 mt-1 text-2xl font-bold">
                 <Wallet className="w-6 h-6" />
-                <span>$3,102.48</span>
+                <span>${balanceMultiWallet}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">

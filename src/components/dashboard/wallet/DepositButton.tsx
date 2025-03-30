@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
 import { convertKey, credisToMicrocredis, microcredisToCredis } from "@/utils";
@@ -190,7 +190,7 @@ const DepositButton = ({
   const handleDeposit = async () => {
     if (Number(amount) <= 0) {
       toast.error("Amount must be greater than 0");
-      return
+      return;
     }
     if (depositType === "public" && selectedWallet) {
       // @TODO check amount > balance
@@ -200,15 +200,14 @@ const DepositButton = ({
       //     credisToMicrocredis(amount)
       //   );
       // }, 1000);
-      await createDeposit(selectedWallet.data.wallet_address, credisToMicrocredis(amount));
-      if (error) {
-        toast(`Error despositing ${error.message}`);
+      const txHash = await createDeposit(
+        selectedWallet.data.wallet_address,
+        credisToMicrocredis(amount)
+      );
+      if (txHash) {
+        reset();
+        setAmount("0");
       }
-      if (txId) {
-        setStep(3);
-      }
-      reset()
-      setAmount("0")
     } else if (depositType === "private" && selectedWallet) {
       const record = await getCreditsRecord();
       if (!record) return;
@@ -226,20 +225,36 @@ const DepositButton = ({
       //     creditsRecord
       //   );
       // }, 1000);
-      await createDeposit(selectedWallet.data.wallet_address, credisToMicrocredis(amount), creditsRecord);
-      if (error) {
-        toast(`Error despositing ${error.message}`);
+      const txHash = await createDeposit(
+        selectedWallet.data.wallet_address,
+        credisToMicrocredis(amount),
+        creditsRecord
+      );
+      if (txHash) {
+        reset();
+        setAmount("0");
       }
-      if (txId) {
-        setStep(3);
-      }
-      reset()
-      setAmount("0")
     }
   };
 
+  useEffect(() => {
+    if (error) {
+      toast(`Error despositing ${error.message}`);
+      reset();
+    }
+    if (txId) {
+      setStep(3);
+    }
+  }, [error, txId]);
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={() => {
+      setStep(1);
+      setAmount("0");
+      setDepositType("public");
+      setFeeType("public");
+      reset();
+    }}>
       <DialogTrigger asChild>
         <Button variant="outline" className={className} disabled={isProcessing}>
           {isProcessing ? <Loader2 className="animate-spin" /> : text}
@@ -286,7 +301,7 @@ const DepositButton = ({
                         } else if (step === 1 && amount) {
                           if (Number(amount) < 0) {
                             toast("Amount must be greater than 0");
-                            return
+                            return;
                           }
                           setStep(2);
                         }
