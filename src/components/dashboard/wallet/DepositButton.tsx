@@ -12,8 +12,13 @@ import {
 } from "@/components/ui/dialog";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import useAccount, { WalletRecordData } from "@/stores/useAccount";
+import { convertKey, credisToMicrocredis, microcredisToCredis } from "@/utils";
+import { useCreateDeposit, useGetCreditsRecord } from "zerosecurehq-sdk";
+import { Loader2 } from "lucide-react";
 
-const Page1 = () => {
+const Page1 = ({ setAmount }: { setAmount: (amount: string) => void }) => {
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
       <Warning
@@ -23,7 +28,12 @@ const Page1 = () => {
       />
       <div className="flex- space-y-1.5">
         <Label>Amount</Label>
-        <Input type="number" placeholder="0" />
+        <Input
+          type="number"
+          placeholder="0"
+          onChange={(e) => setAmount(e.target.value)}
+          min={0}
+        />
       </div>
     </div>
   );
@@ -34,11 +44,15 @@ const Page2 = ({
   setFeeType,
   depositType,
   setDepositType,
+  amount,
+  selectedWallet,
 }: {
   feeType: "public" | "private";
   setFeeType: (type: "public" | "private") => void;
   depositType: "public" | "private";
   setDepositType: (type: "public" | "private") => void;
+  amount: string;
+  selectedWallet: WalletRecordData;
 }) => {
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
@@ -50,8 +64,8 @@ const Page2 = ({
       <div className="w-full flex justify-center items-center ">
         <div className="p-1 rounded-md text-3xl">
           {" "}
-          <span className="font-semibold">12</span>
-          <span className="text-xl font-mono">.44 Aleo</span>
+          <span className="font-semibold">{Number(amount)} Aleo</span>
+          {/* <span className="text-xl font-mono">.44 Aleo</span> */}
         </div>
       </div>
       <div className="w-full flex items-center">
@@ -64,7 +78,9 @@ const Page2 = ({
             maskImage: "linear-gradient(90deg, transparent, #ccc, transparent)",
           }}
         ></div>
-        <span>aleo12a...ss2s</span>
+        <span>
+          {convertKey(selectedWallet ? selectedWallet.data.wallet_address : "")}
+        </span>
       </div>
       <div className="w-full flex items-center">
         <span className="opacity-75">Execution Fee</span>
@@ -165,11 +181,68 @@ const DepositButton = ({
   const [depositType, setDepositType] = useState<"public" | "private">(
     "public"
   );
+  const [amount, setAmount] = useState("0");
+  const { createDeposit, error, isProcessing, reset, txId } =
+    useCreateDeposit();
+  const { selectedWallet } = useAccount();
+  const { getCreditsRecord } = useGetCreditsRecord();
+
+  const handleDeposit = async () => {
+    if (Number(amount) <= 0) {
+      toast.error("Amount must be greater than 0");
+      return
+    }
+    if (depositType === "public" && selectedWallet) {
+      // @TODO check amount > balance
+      // setTimeout(() => {
+      //   console.log(
+      //     selectedWallet.data.wallet_address,
+      //     credisToMicrocredis(amount)
+      //   );
+      // }, 1000);
+      await createDeposit(selectedWallet.data.wallet_address, credisToMicrocredis(amount));
+      if (error) {
+        toast(`Error despositing ${error.message}`);
+      }
+      if (txId) {
+        setStep(3);
+      }
+      reset()
+      setAmount("0")
+    } else if (depositType === "private" && selectedWallet) {
+      const record = await getCreditsRecord();
+      if (!record) return;
+      const creditsRecord = record.find(
+        (item) => microcredisToCredis(item.data.microcredits) >= Number(amount)
+      );
+      if (!creditsRecord) {
+        toast.error("No enough credits");
+        return;
+      }
+      // setTimeout(() => {
+      //   console.log(
+      //     selectedWallet.data.wallet_address,
+      //     credisToMicrocredis(amount),
+      //     creditsRecord
+      //   );
+      // }, 1000);
+      await createDeposit(selectedWallet.data.wallet_address, credisToMicrocredis(amount), creditsRecord);
+      if (error) {
+        toast(`Error despositing ${error.message}`);
+      }
+      if (txId) {
+        setStep(3);
+      }
+      reset()
+      setAmount("0")
+    }
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className={className}>
-          {text}
+        <Button variant="outline" className={className} disabled={isProcessing}>
+          {isProcessing ? <Loader2 className="animate-spin" /> : text}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -184,13 +257,15 @@ const DepositButton = ({
             <div className="col-span-2 bg-white rounded-md relative">
               {
                 {
-                  1: <Page1 />,
+                  1: <Page1 setAmount={setAmount} />,
                   2: (
                     <Page2
                       depositType={depositType}
                       setDepositType={setDepositType}
                       feeType={feeType}
                       setFeeType={setFeeType}
+                      amount={amount}
+                      selectedWallet={selectedWallet!}
                     />
                   ),
                   3: <Page3 />,
@@ -201,10 +276,24 @@ const DepositButton = ({
                 <div className="flex justify-between flex-row-reverse">
                   {step <= 2 && (
                     <Button
-                      onClick={() => setStep(step + 1)}
+                      onClick={() => {
+                        if (step === 2) {
+                          handleDeposit();
+                        }
+                        if (step === 1 && (amount === "0" || amount === "")) {
+                          toast("Please enter an amount");
+                          return;
+                        } else if (step === 1 && amount) {
+                          if (Number(amount) < 0) {
+                            toast("Amount must be greater than 0");
+                            return
+                          }
+                          setStep(2);
+                        }
+                      }}
                       variant={"outline"}
                     >
-                      Next
+                      {step === 2 ? "Deposit" : "Next"}
                     </Button>
                   )}
                   {step > 1 && step <= 2 && (

@@ -22,10 +22,8 @@ import {
 import { WalletProvider } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletModalProvider } from "@demox-labs/aleo-wallet-adapter-reactui";
 import { Toaster } from "./components/ui/sonner";
-import useAccount from "./stores/useAccount";
 
 const App = () => {
-  const { selectedWallet } = useAccount();
   const wallets = useMemo(
     () => [
       new LeoWalletAdapter({

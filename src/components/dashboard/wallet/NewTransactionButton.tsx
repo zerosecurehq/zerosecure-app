@@ -15,6 +15,8 @@ import { useState } from "react";
 import { useCreateTransaction } from "zerosecurehq-sdk";
 import { toast } from "sonner";
 import useAccount from "@/stores/useAccount";
+import { Loader2 } from "lucide-react";
+import { credisToMicrocredis } from "@/utils";
 
 const Page1 = ({
   setAmount,
@@ -43,6 +45,7 @@ const Page1 = ({
           type="number"
           placeholder="0"
           onChange={(e) => setAmount(e.target.value)}
+          min={0}
         />
       </div>
     </div>
@@ -176,7 +179,18 @@ const NewTransactionButton = ({
     useCreateTransaction();
 
   const handleCreateTransaction = async () => {
-    await createTransaction(selectedWallet!, recipient, Number(amount));
+    if (!selectedWallet) return;
+    const { avatar, ...walletWithoutAvatar } = selectedWallet;
+    // setTimeout(() => {
+    //   console.log(walletWithoutAvatar, recipient, credisToMicrocredis(amount));
+    // }, 1000);
+    await createTransaction(walletWithoutAvatar, recipient, credisToMicrocredis(amount));
+    if (error) {
+      toast.error(error.message);
+    }
+    if (txId) {
+      setStep(3);
+    }
     reset();
     setAmount("");
     setRecipient("");
@@ -185,8 +199,8 @@ const NewTransactionButton = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className={className}>
-          {text}
+        <Button variant="outline" className={className} disabled={isProcessing}>
+          {isProcessing ? <Loader2 className="animate-spin" /> : text}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -224,11 +238,16 @@ const NewTransactionButton = ({
                         if (step === 1 && (recipient === "" || amount === "")) {
                           toast("Please fill out all the fields.");
                           return;
+                        } else if (step === 1 && recipient && amount) {
+                          if (Number(amount) < 0) {
+                            toast("Amount must be greater than 0.");
+                            return;
+                          }
+                          setStep(2);
                         }
                         if (step === 2) {
                           handleCreateTransaction();
                         }
-                        setStep(step + 1);
                       }}
                       variant={"outline"}
                     >

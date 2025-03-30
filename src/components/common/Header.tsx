@@ -53,7 +53,7 @@ const Header = () => {
         </div>
         {selectedWallet && (
           <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200">
-          <div className="w-12 h-12 relative bg-gradient-primary rounded-xl"></div>
+          <div className={`w-12 h-12 relative ${selectedWallet?.avatar} rounded-xl`}></div>
           <div className="text-sm flex-1">
             <div className="font-semibold text-center">
               <Badge>Wallet 1</Badge>

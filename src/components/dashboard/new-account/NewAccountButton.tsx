@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import {
   AlertCircle,
   Copy,
+  Loader2,
   Plus,
   Share,
   Trash,
@@ -50,6 +51,15 @@ const NewAccountButton = () => {
 
   const handleCreateMultiWallet = async () => {
     try {
+      // setTimeout(() => {
+      //   console.log({
+      //     owners: [
+      //       publicKey as string,
+      //       ...signerList.map((signer) => signer.address),
+      //     ],
+      //     threshold: Number(threshold),
+      //   });
+      // }, 1000);
       await createMultisigWallet({
         owners: [
           publicKey as string,
@@ -59,6 +69,9 @@ const NewAccountButton = () => {
       });
       if (error) {
         toast(`Error creating wallet ${error.message}`);
+      }
+      if (txId) {
+        setCurrentStep(4);
       }
       reset();
       toast("Wallet created successfully");
@@ -72,8 +85,9 @@ const NewAccountButton = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Plus /> New Account
+        <Button variant="outline" className="flex items-center gap-2" disabled={isProcessing}>
+          {isProcessing ? <Loader2 className="animate-spin" /> : <Plus />}
+          <div>{isProcessing ? "Processing..." : "New Account"}</div>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-auto">
@@ -158,43 +172,42 @@ const NewAccountButton = () => {
                 {/* 2 */}
                 {currentStep === 2 && (
                   <>
-                    <div className="px-4 py-5 border-b border-gray-300">
-                      <div className="space-y-5 max-h-[300px] overflow-y-auto">
-                        {signerList.length > 0 &&
-                          signerList.map((signer, idx) => (
-                            <div key={idx} className="relative w-full">
-                              <Card className="shadow-sm hover:shadow-md transition-shadow border border-gray-200 rounded-lg p-3 pr-8 relative">
-                                <CardHeader className="p-0 mb-1">
-                                  <CardTitle className="text-xs font-semibold text-gray-700">
-                                    Signer {idx + 1}
-                                  </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-0 space-y-1">
-                                  <p className="text-sm font-medium text-gray-800 truncate">
-                                    Signer name: {signer.name}
-                                  </p>
-                                  <p className="text-sm text-gray-500 truncate">
-                                    Signer wallet: {signer.address}
-                                  </p>
-                                </CardContent>
-                              </Card>
+                    {signerList.length > 0 && (
+                      <div className="px-4 py-5 border-b border-gray-300 space-y-2">
+                        {signerList.map((signer, idx) => (
+                          <div key={idx} className="relative w-full">
+                            <Card className="shadow-sm hover:shadow-md transition-shadow border border-gray-200 rounded-lg p-3 pr-8 relative">
+                              <CardHeader className="p-0 mb-1">
+                                <CardTitle className="text-xs font-semibold text-gray-700">
+                                  Signer {idx + 1}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-0 space-y-1">
+                                <p className="text-sm font-medium text-gray-800 truncate">
+                                  Signer name: {signer.name}
+                                </p>
+                                <p className="text-sm text-gray-500 truncate">
+                                  Signer wallet: {signer.address}
+                                </p>
+                              </CardContent>
+                            </Card>
 
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500 hover:text-red-700"
-                                onClick={() =>
-                                  setSignerList(
-                                    signerList.filter((_, i) => i !== idx)
-                                  )
-                                }
-                              >
-                                <Trash size={14} />
-                              </Button>
-                            </div>
-                          ))}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500 hover:text-red-700"
+                              onClick={() =>
+                                setSignerList(
+                                  signerList.filter((_, i) => i !== idx)
+                                )
+                              }
+                            >
+                              <Trash size={14} />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    </div>
+                    )}
 
                     <div className="px-4 py-3 space-y-3">
                       <Label>Add Signer</Label>
@@ -350,6 +363,7 @@ const NewAccountButton = () => {
                   </>
                 )}
 
+                {/* 4 */}
                 {currentStep === 4 && (
                   <div className="p-5 space-y-6 border-t border-b border-gray-200">
                     <div className="w-full flex justify-center items-center ">
@@ -368,6 +382,7 @@ const NewAccountButton = () => {
                     </div>
                   </div>
                 )}
+
                 {currentStep < 4 && (
                   <div className="px-14 py-5 flex items-center justify-between">
                     {currentStep === 1 ? (
@@ -386,7 +401,7 @@ const NewAccountButton = () => {
                     <Button
                       variant={"outline"}
                       onClick={() => {
-                        if (currentStep < 4) {
+                        if (currentStep < 3) {
                           if (
                             currentStep === 2 &&
                             (signerList.length === 0 || threshold === "")

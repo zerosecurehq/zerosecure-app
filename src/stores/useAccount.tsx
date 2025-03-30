@@ -1,60 +1,79 @@
 import { create } from "zustand";
 import { WalletRecord } from "zerosecurehq-sdk";
 
-interface AccountState {
-  wallets: WalletRecord[];
-  setWallets: (wallets: WalletRecord[]) => void;
-  pinnedWallets: WalletRecord[];
-  selectedWallet: WalletRecord | null;
-  setSelectedWallet: (wallet: WalletRecord | null) => void;
-  setPinnedWallet: (wallet: WalletRecord) => void;
-  removePinnedWallet: (wallet: WalletRecord) => void;
+export interface WalletRecordData extends WalletRecord {
+  avatar?: string;
 }
 
-const useAccount = create<AccountState>((set) => {
-  return {
-    wallets: [],
-    pinnedWallets: JSON.parse(localStorage.getItem("pinnedWallets") || "[]"),
+interface AccountState {
+  wallets: WalletRecordData[];
+  pinnedWallets: WalletRecordData[];
+  selectedWallet: WalletRecordData | null;
+  setWallets: (wallets: WalletRecordData[]) => void;
+  togglePinnedWallet: (wallet: WalletRecordData) => void;
+  setSelectedWallet: (wallet: WalletRecordData | null) => void;
+}
 
-    setWallets: (wallets) => {
-      set({ wallets });
-    },
+const gradients = [
+  "bg-gradient-to-r from-blue-500 to-green-500",
+  "bg-gradient-to-r from-purple-500 to-pink-500",
+  "bg-gradient-to-r from-red-500 to-yellow-500",
+  "bg-gradient-to-r from-indigo-500 to-purple-500",
+  "bg-gradient-to-r from-teal-500 to-cyan-500",
+];
 
-    selectedWallet: JSON.parse(localStorage.getItem("selectedWallet") || "null"),
-    setSelectedWallet: (wallet) => {
-      localStorage.setItem("selectedWallet", JSON.stringify(wallet));
-      set({ selectedWallet: wallet });
-    },
+const getRandomGradient = () =>
+  gradients[Math.floor(Math.random() * gradients.length)];
 
-    setPinnedWallet: (wallet) => {
-      set((state) => {
-        if (
-          state.pinnedWallets.some(
-            (w) => w.data.wallet_address === wallet.data.wallet_address
+const getLocalStorage = <T,>(key: string, defaultValue: T): T => {
+  try {
+    return JSON.parse(localStorage.getItem(key) || "null") ?? defaultValue;
+  } catch {
+    return defaultValue;
+  }
+};
+
+const setLocalStorage = (key: string, value: any) => {
+  localStorage.setItem(key, JSON.stringify(value));
+};
+
+const enhanceWallets = (wallets: WalletRecordData[]) =>
+  wallets.map((wallet) => ({
+    ...wallet,
+    avatar: wallet.avatar || getRandomGradient(),
+  }));
+
+const useAccount = create<AccountState>((set) => ({
+  wallets: getLocalStorage("wallets", []),
+  pinnedWallets: getLocalStorage("pinnedWallets", []),
+  selectedWallet: getLocalStorage("selectedWallet", null),
+
+  setWallets: (wallets) => {
+    const enhanced = enhanceWallets(wallets);
+    setLocalStorage("wallets", enhanced);
+    set({ wallets: enhanced });
+  },
+
+  setSelectedWallet: (wallet) => {
+    if (wallet) wallet.avatar = wallet.avatar || getRandomGradient();
+    setLocalStorage("selectedWallet", wallet);
+    set({ selectedWallet: wallet });
+  },
+
+  togglePinnedWallet: (wallet) => {
+    set((state) => {
+      const exists = state.pinnedWallets.some(
+        (w) => w.data.wallet_address === wallet.data.wallet_address
+      );
+      const updatedPinned = exists
+        ? state.pinnedWallets.filter(
+            (w) => w.data.wallet_address !== wallet.data.wallet_address
           )
-        ) {
-          return state;
-        }
-
-        const updatedPinned = [...state.pinnedWallets, wallet];
-        localStorage.setItem("pinnedWallets", JSON.stringify(updatedPinned));
-
-        return { pinnedWallets: updatedPinned };
-      });
-    },
-
-    removePinnedWallet: (wallet) => {
-      set((state) => {
-        const updatedPinned = state.pinnedWallets.filter(
-          (w) => w.data.wallet_address !== wallet.data.wallet_address
-        );
-
-        localStorage.setItem("pinnedWallets", JSON.stringify(updatedPinned));
-
-        return { pinnedWallets: updatedPinned };
-      });
-    },
-  };
-});
+        : [...state.pinnedWallets, wallet];
+      setLocalStorage("pinnedWallets", updatedPinned);
+      return { pinnedWallets: updatedPinned };
+    });
+  },
+}));
 
 export default useAccount;
