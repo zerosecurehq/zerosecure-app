@@ -15,7 +15,11 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
 import { convertKey, credisToMicrocredis, microcredisToCredis } from "@/utils";
-import { useCreateDeposit, useGetCreditsRecord } from "zerosecurehq-sdk";
+import {
+  removeVisibleModifier,
+  useCreateDeposit,
+  useGetCreditsRecord,
+} from "zerosecurehq-sdk";
 import { Loader2 } from "lucide-react";
 
 const Page1 = ({ setAmount }: { setAmount: (amount: string) => void }) => {
@@ -79,7 +83,11 @@ const Page2 = ({
           }}
         ></div>
         <span>
-          {convertKey(selectedWallet ? selectedWallet.data.wallet_address : "")}
+          {convertKey(
+            removeVisibleModifier(
+              selectedWallet ? selectedWallet.data.wallet_address : ""
+            )
+          )}
         </span>
       </div>
       <div className="w-full flex items-center">
@@ -201,7 +209,7 @@ const DepositButton = ({
       //   );
       // }, 1000);
       const txHash = await createDeposit(
-        selectedWallet.data.wallet_address,
+        removeVisibleModifier(selectedWallet.data.wallet_address),
         credisToMicrocredis(amount)
       );
       if (txHash) {
@@ -248,13 +256,15 @@ const DepositButton = ({
   }, [error, txId]);
 
   return (
-    <Dialog onOpenChange={() => {
-      setStep(1);
-      setAmount("0");
-      setDepositType("public");
-      setFeeType("public");
-      reset();
-    }}>
+    <Dialog
+      onOpenChange={() => {
+        setStep(1);
+        setAmount("0");
+        setDepositType("public");
+        setFeeType("public");
+        reset();
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="outline" className={className} disabled={isProcessing}>
           {isProcessing ? <Loader2 className="animate-spin" /> : text}

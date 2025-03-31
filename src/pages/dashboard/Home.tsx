@@ -43,7 +43,7 @@ const Home = () => {
               <p className="text-sm text-muted-foreground">Current Balance</p>
               <div className="flex items-center gap-2 mt-1 text-2xl font-bold">
                 <Wallet className="w-6 h-6" />
-                <span>${balanceMultiWallet}</span>
+                <span>${0}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ const Home = () => {
                   width={25}
                   height={25}
                 />
-                <span>123.21 Aleo</span>
+                <span>{balanceMultiWallet} Aleo</span>
               </div>
             </div>
           </CardContent>

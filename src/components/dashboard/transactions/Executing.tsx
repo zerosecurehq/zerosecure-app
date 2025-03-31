@@ -83,6 +83,7 @@ const Signing = () => {
     const txHash = await applyExecuteTicket(dataExcute);
     if (txHash) {
       resetExcute();
+      handleGetExcute();
     }
   };
 
@@ -97,7 +98,7 @@ const Signing = () => {
       toast(`Error excute: ${errorExcute.message}`);
       resetExcute();
     }
-  }, [errorExcute, txIdExcute]);
+  }, [errorExcute]);
 
   return (
     <article>

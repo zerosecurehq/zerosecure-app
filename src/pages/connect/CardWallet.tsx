@@ -4,6 +4,7 @@ import { convertKey, getBalanceMultiWallet } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Pin, Trash2, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
+import { removeVisibleModifier } from "zerosecurehq-sdk";
 
 const CardWallet = ({
   wallet,
@@ -28,6 +29,7 @@ const CardWallet = ({
       getBalance();
     }
   }, [selectedWallet]);
+
   return (
     <Card
       key={wallet.data.wallet_address}
@@ -43,7 +45,7 @@ const CardWallet = ({
           <div className={`h-12 w-12 rounded-lg ${wallet?.avatar}`} />
           <div className="flex flex-col">
             <span className="font-semibold text-gray-900 truncate max-w-[160px]">
-              {convertKey(wallet.data.wallet_address)}
+              {removeVisibleModifier(wallet.data.wallet_address)}
             </span>
             <p className="text-gray-500 text-sm">${balanceMultiWallet}</p>
           </div>

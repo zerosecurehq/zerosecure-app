@@ -6,6 +6,8 @@ export interface WalletRecordData extends WalletRecord {
 }
 
 interface AccountState {
+  publicKey: string | null;
+  setPublicKey: (key: string) => void;
   wallets: WalletRecordData[];
   pinnedWallets: WalletRecordData[];
   selectedWallet: WalletRecordData | null;
@@ -38,6 +40,26 @@ const setLocalStorage = (key: string, value: any) => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
+const getStoredAccount = (publicKey: string) => {
+  const accounts = getLocalStorage<Record<string, any>>("accounts", {});
+  return (
+    accounts[publicKey] || {
+      wallets: [],
+      pinnedWallets: [],
+      selectedWallet: null,
+    }
+  );
+};
+
+const updateStoredAccount = (
+  publicKey: string,
+  data: Partial<AccountState>
+) => {
+  const accounts = getLocalStorage<Record<string, any>>("accounts", {});
+  accounts[publicKey] = { ...accounts[publicKey], ...data };
+  setLocalStorage("accounts", accounts);
+};
+
 const enhanceWallets = (wallets: WalletRecordData[]) =>
   wallets.map((wallet) => ({
     ...wallet,
@@ -45,24 +67,37 @@ const enhanceWallets = (wallets: WalletRecordData[]) =>
   }));
 
 const useAccount = create<AccountState>((set) => ({
-  wallets: getLocalStorage("wallets", []),
-  pinnedWallets: getLocalStorage("pinnedWallets", []),
-  selectedWallet: getLocalStorage("selectedWallet", null),
+  publicKey: null,
+  wallets: [],
+  pinnedWallets: [],
+  selectedWallet: null,
+
+  setPublicKey: (key) => {
+    const accountData = getStoredAccount(key);
+    set({ publicKey: key, ...accountData });
+  },
 
   setWallets: (wallets) => {
-    const enhanced = enhanceWallets(wallets);
-    setLocalStorage("wallets", enhanced);
-    set({ wallets: enhanced });
+    set((state) => {
+      if (!state.publicKey) return {};
+      const enhanced = enhanceWallets(wallets);
+      updateStoredAccount(state.publicKey, { wallets: enhanced });
+      return { wallets: enhanced };
+    });
   },
 
   setSelectedWallet: (wallet) => {
-    if (wallet) wallet.avatar = wallet.avatar || getRandomGradient();
-    setLocalStorage("selectedWallet", wallet);
-    set({ selectedWallet: wallet });
+    set((state) => {
+      if (!state.publicKey) return {};
+      if (wallet) wallet.avatar = wallet.avatar || getRandomGradient();
+      updateStoredAccount(state.publicKey, { selectedWallet: wallet });
+      return { selectedWallet: wallet };
+    });
   },
 
   togglePinnedWallet: (wallet) => {
     set((state) => {
+      if (!state.publicKey) return {};
       const exists = state.pinnedWallets.some(
         (w) => w.data.wallet_address === wallet.data.wallet_address
       );
@@ -71,12 +106,17 @@ const useAccount = create<AccountState>((set) => ({
             (w) => w.data.wallet_address !== wallet.data.wallet_address
           )
         : [...state.pinnedWallets, wallet];
-      setLocalStorage("pinnedWallets", updatedPinned);
+      updateStoredAccount(state.publicKey, { pinnedWallets: updatedPinned });
       return { pinnedWallets: updatedPinned };
     });
   },
 
-  resetAccount: () => set({ wallets: [], pinnedWallets: [], selectedWallet: null }),
+  resetAccount: () =>
+    set({
+      wallets: [],
+      pinnedWallets: [],
+      selectedWallet: null,
+    }),
 }));
 
 export default useAccount;

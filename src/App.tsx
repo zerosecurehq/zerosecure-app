@@ -19,7 +19,9 @@ import {
   DecryptPermission,
   WalletAdapterNetwork,
 } from "@demox-labs/aleo-wallet-adapter-base";
-import { WalletProvider } from "@demox-labs/aleo-wallet-adapter-react";
+import {
+  WalletProvider,
+} from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletModalProvider } from "@demox-labs/aleo-wallet-adapter-reactui";
 import { Toaster } from "./components/ui/sonner";
 

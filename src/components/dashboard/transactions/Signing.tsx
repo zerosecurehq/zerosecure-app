@@ -82,6 +82,7 @@ const Signing = () => {
     const txHash = await applyConfirmTransferTicket(dataConfirm);
     if (txHash) {
       resetConfirm();
+      handleGetSigning();
     }
   };
 
@@ -96,7 +97,7 @@ const Signing = () => {
       toast(`Error confirm ${errorConfirm.message}`);
       resetConfirm();
     }
-  }, [errorConfirm, txIdConfirm, resetConfirm]);
+  }, [errorConfirm]);
 
   return (
     <article>

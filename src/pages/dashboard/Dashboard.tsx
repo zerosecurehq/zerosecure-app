@@ -1,13 +1,26 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/common/Sidebar";
 import Header from "../../components/common/Header";
 import SidebarProvider from "./../../components/common/SidebarProvider";
 import useAccount from "@/stores/useAccount";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
+import { useEffect } from "react";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 
 const Dashboard = () => {
-  const { selectedWallet } = useAccount();
+  const { selectedWallet, resetAccount } = useAccount();
+  const { publicKey } = useWallet();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!publicKey) {
+      resetAccount()
+      return
+    };
+    if (!selectedWallet) navigate("/connect");
+  }, [publicKey]);
+
   return (
     <section className="min-h-screen w-full mt-16">
       <Header />
@@ -31,7 +44,12 @@ const Dashboard = () => {
                   <p className="text-gray-600 mb-4">
                     You do not have permission to access this page.
                   </p>
-                  <Link to={"/connect"} className="hover:bg-gray-200 p-2 rounded-md">Return to Home</Link>
+                  <Link
+                    to={"/connect"}
+                    className="hover:bg-gray-200 p-2 rounded-md"
+                  >
+                    Return to Home
+                  </Link>
                 </CardContent>
               </Card>
             </div>

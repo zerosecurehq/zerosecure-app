@@ -4,28 +4,98 @@ import { Input } from "@/components/ui/input";
 import { Wallet, Pin, Bookmark } from "lucide-react";
 import NewAccountButton from "@/components/dashboard/new-account/NewAccountButton";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
-import useAccount from "@/stores/useAccount";
+import useAccount, { WalletRecordData } from "@/stores/useAccount";
 import CardWallet from "./CardWallet";
 import { useGetWalletCreated } from "zerosecurehq-sdk";
 import { useEffect } from "react";
 
+const dataTest: WalletRecordData[] = [
+  {
+    id: "a1b2c3d4-e5f6-7g8h-9i10-j11k12l13m14",
+    spent: false,
+    recordName: "Wallet",
+    name: "Personal Wallet",
+    owner: "aleo1ownerxyz1234567890abcdefghijklmnopqrstuv",
+    program_id: "zerosecure_v2.aleo",
+    data: {
+      wallet_address: "aleo1xyzabc1234567890abcdefghijklmnopqrstuv.private",
+      owners: ["aleo1ownerxyz1234567890abcdefghijklmnopqrstuv.private"],
+      threshold: 1,
+    },
+    avatar: "bg-gradient-to-r from-blue-500 to-green-500",
+  },
+  {
+    id: "b2c3d4e5-f6g7-h8i9-j10k11-l12m13n14o15",
+    spent: true,
+    recordName: "Wallet",
+    name: "Savings Wallet",
+    owner: "aleo1ownerxyz9876543210lkjihgfedcba",
+    program_id: "credits.aleo",
+    data: {
+      wallet_address: "aleo1mnopqrstu1234567890vwxyzabcdefghijkl.private",
+      owners: ["aleo1ownerxyz9876543210lkjihgfedcba.private"],
+      threshold: 2,
+    },
+    avatar: "bg-gradient-to-r from-purple-500 to-pink-500",
+  },
+  {
+    id: "c3d4e5f6-g7h8-i9j10-k11l12-m13n14o15p16",
+    spent: false,
+    recordName: "Wallet",
+    name: "Investment Wallet",
+    owner: "aleo1ownerxyz0987654321zyxwvutsrqponmlk",
+    program_id: "aleo_multisig_v5.aleo",
+    data: {
+      wallet_address: "aleo1abcdefghijk1234567890lmnopqrstuvwxyz.private",
+      owners: ["aleo1ownerxyz0987654321zyxwvutsrqponmlk.private"],
+      threshold: 3,
+    },
+    avatar: "bg-gradient-to-r from-red-500 to-yellow-500",
+  },
+  {
+    id: "d4e5f6g7-h8i9-j10k11-l12m13-n14o15p16q17",
+    spent: true,
+    recordName: "Wallet",
+    name: "Shared Wallet",
+    owner: "aleo1ownerxyz5678901234lkjihgfedcba",
+    program_id: "dApp_1_test.aleo",
+    data: {
+      wallet_address: "aleo1zxcvbnmasdfghjklqwertyuiop0987654321.private",
+      owners: ["aleo1ownerxyz5678901234lkjihgfedcba.private"],
+      threshold: 1,
+    },
+    avatar: "bg-gradient-to-r from-indigo-500 to-purple-500",
+  },
+];
+
 const Connect = () => {
   const { publicKey } = useWallet();
-  const { wallets, pinnedWallets, togglePinnedWallet, setWallets } =
+  const { wallets, pinnedWallets, togglePinnedWallet, selectedWallet } =
     useAccount();
+  const { resetAccount, setWallets, setPublicKey } = useAccount();
   const { getWalletCreated } = useGetWalletCreated();
 
+  const fetchWallets = async () => {
+    // setWallets(dataTest);
+    const newWallets = await getWalletCreated();
+    if (newWallets) {
+      setWallets(newWallets);
+    }
+  };
+
   useEffect(() => {
-    const fetchWallets = async () => {
-      if (wallets.length === 0) {
-        const newWallets = await getWalletCreated();
-        if (newWallets) setWallets(newWallets);
-      }
-    };
-    if (publicKey) {
+    if (!publicKey) {
+      resetAccount();
+      return;
+    }
+    setPublicKey(publicKey);
+    const storedWallets = JSON.parse(localStorage.getItem("accounts") || "{}");
+    if (storedWallets[publicKey]) {
+      setPublicKey(publicKey);
+    } else {
       fetchWallets();
     }
-  }, [wallets.length, setWallets, getWalletCreated, publicKey]);
+  }, [publicKey]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -59,16 +129,38 @@ const Connect = () => {
               </h2>
               <div className="border border-dashed border-gray-300 p-2 text-gray-500 text-center rounded-lg space-y-2">
                 {pinnedWallets.length > 0 ? (
-                  pinnedWallets.map((wallet) => (
-                    <CardWallet
-                      key={wallet.data.wallet_address}
-                      wallet={wallet}
-                      isPinned={true}
-                      togglePin={() => togglePinnedWallet(wallet)}
-                    />
-                  ))
+                  <>
+                    {selectedWallet &&
+                      pinnedWallets.some(
+                        (w) =>
+                          w.data.wallet_address ===
+                          selectedWallet.data.wallet_address
+                      ) && (
+                        <CardWallet
+                          key={selectedWallet.data.wallet_address}
+                          wallet={selectedWallet}
+                          isPinned={true}
+                          togglePin={() => togglePinnedWallet(selectedWallet)}
+                        />
+                      )}
+                    {pinnedWallets
+                      .filter(
+                        (wallet) =>
+                          !selectedWallet ||
+                          wallet.data.wallet_address !==
+                            selectedWallet.data.wallet_address
+                      )
+                      .map((wallet) => (
+                        <CardWallet
+                          key={wallet.data.wallet_address}
+                          wallet={wallet}
+                          isPinned={true}
+                          togglePin={() => togglePinnedWallet(wallet)}
+                        />
+                      ))}
+                  </>
                 ) : (
-                  <div>
+                  <div className="border border-dashed border-gray-300 p-6 text-gray-500 text-center rounded-lg flex items-center justify-center">
                     Personalize your account list by clicking the{" "}
                     <Pin className="mx-1" size={18} /> icon on the accounts most
                     important to you.
@@ -83,9 +175,23 @@ const Connect = () => {
             </div>
 
             <div className="space-y-2">
+              {selectedWallet &&
+                !pinnedWallets.some(
+                  (w) =>
+                    w.data.wallet_address === selectedWallet.data.wallet_address
+                ) && (
+                  <CardWallet
+                    key={selectedWallet.data.wallet_address}
+                    wallet={selectedWallet}
+                    isPinned={false}
+                    togglePin={() => togglePinnedWallet(selectedWallet)}
+                  />
+                )}
               {wallets
-                ?.filter(
+                .filter(
                   (wallet) =>
+                    wallet.data.wallet_address !==
+                      selectedWallet?.data.wallet_address &&
                     !pinnedWallets.some(
                       (pinned) =>
                         pinned.data.wallet_address ===

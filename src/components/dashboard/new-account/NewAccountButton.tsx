@@ -31,10 +31,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
-import { useCreateMultisigWallet } from "zerosecurehq-sdk";
+import {
+  removeVisibleModifier,
+  useCreateMultisigWallet,
+  useGetWalletCreated,
+} from "zerosecurehq-sdk";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { getRandomGradient } from "@/stores/useAccount";
+import useAccount, { getRandomGradient } from "@/stores/useAccount";
+import { convertKey } from "@/utils";
 
 interface Signer {
   name: string;
@@ -44,11 +49,13 @@ interface Signer {
 const NewAccountButton = () => {
   const { publicKey } = useWallet();
   const [currentStep, setCurrentStep] = useState(1);
+  const { selectedWallet, setWallets } = useAccount();
   const [signerList, setSignerList] = useState<Signer[]>([]);
   const [newSigner, setNewSigner] = useState<Signer>({ name: "", address: "" });
   const [threshold, setThreshold] = useState("1");
   const { createMultisigWallet, error, isProcessing, txId, reset } =
     useCreateMultisigWallet();
+  const { getWalletCreated } = useGetWalletCreated();
 
   const handleCreateMultiWallet = async () => {
     try {
@@ -73,6 +80,10 @@ const NewAccountButton = () => {
         toast("Wallet created successfully");
         setNewSigner({ name: "", address: "" });
         setSignerList([]);
+        const refreshWalletCreated = await getWalletCreated();
+        if (refreshWalletCreated) {
+          setWallets(refreshWalletCreated);
+        }
       }
     } catch (error) {
       console.log(`Error in createMultiWallet: ${error}`);
@@ -90,13 +101,15 @@ const NewAccountButton = () => {
   }, [error, txId]);
 
   return (
-    <Dialog onOpenChange={() => {
-      setCurrentStep(1);
-      reset();
-      setSignerList([]);
-      setNewSigner({ name: "", address: "" });
-      setThreshold("1");
-    }}>
+    <Dialog
+      onOpenChange={() => {
+        setCurrentStep(1);
+        reset();
+        setSignerList([]);
+        setNewSigner({ name: "", address: "" });
+        setThreshold("1");
+      }}
+    >
       <DialogTrigger asChild>
         <Button
           variant="outline"
@@ -189,9 +202,26 @@ const NewAccountButton = () => {
                 {/* 2 */}
                 {currentStep === 2 && (
                   <>
-                    {signerList.length > 0 && (
-                      <div className="px-4 py-5 border-b border-gray-300 space-y-2">
-                        {signerList.map((signer, idx) => (
+                    <div className="px-4 py-5 border-b border-gray-300 space-y-2">
+                      <div className="relative w-full">
+                        <Card className="shadow-sm hover:shadow-md transition-shadow border border-gray-200 rounded-lg p-3 pr-8 relative">
+                          <CardHeader className="p-0 mb-1">
+                            <CardTitle className="text-xs font-semibold text-gray-700">
+                              Me
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0 space-y-1">
+                            <p className="text-sm font-medium text-gray-800 truncate">
+                              Signer name: {selectedWallet?.name}
+                            </p>
+                            <p className="text-sm text-gray-500 truncate max-w-md">
+                              Signer wallet: {publicKey as string}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                      {signerList.length > 0 &&
+                        signerList.map((signer, idx) => (
                           <div key={idx} className="relative w-full">
                             <Card className="shadow-sm hover:shadow-md transition-shadow border border-gray-200 rounded-lg p-3 pr-8 relative">
                               <CardHeader className="p-0 mb-1">
@@ -203,7 +233,7 @@ const NewAccountButton = () => {
                                 <p className="text-sm font-medium text-gray-800 truncate">
                                   Signer name: {signer.name}
                                 </p>
-                                <p className="text-sm text-gray-500 truncate">
+                                <p className="text-sm text-gray-500 truncate max-w-md">
                                   Signer wallet: {signer.address}
                                 </p>
                               </CardContent>
@@ -223,8 +253,7 @@ const NewAccountButton = () => {
                             </Button>
                           </div>
                         ))}
-                      </div>
-                    )}
+                    </div>
 
                     <div className="px-4 py-3 space-y-3">
                       <Label>Add Signer</Label>
@@ -317,7 +346,11 @@ const NewAccountButton = () => {
                             <SelectGroup>
                               <SelectLabel>Threshold</SelectLabel>
                               {[...Array(8)].map((_, i) => (
-                                <SelectItem key={i} value={String(i + 1)}>
+                                <SelectItem
+                                  key={i}
+                                  value={String(i + 1)}
+                                  disabled={i + 1 > signerList.length}
+                                >
                                   {i + 1}
                                 </SelectItem>
                               ))}
@@ -345,13 +378,34 @@ const NewAccountButton = () => {
                       <div className="flex items-center gap-3">
                         <div className="w-1/3">Signers</div>
                         <div className="w-2/3 space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-8 h-8 rounded-md ${getRandomGradient()}`}
+                            />
+                            <div className="flex-1 truncate">
+                              {convertKey(publicKey as string)}
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500">
+                              <Copy
+                                className="cursor-pointer"
+                                size={16}
+                                onClick={() => {
+                                  navigator.clipboard.writeText(
+                                    selectedWallet?.data.wallet_address || ""
+                                  );
+                                  toast("Copied to clipboard");
+                                }}
+                              />
+                              <Share className="cursor-pointer" size={16} />
+                            </div>
+                          </div>
                           {signerList.map((signer, idx) => (
                             <div className="flex items-center gap-2" key={idx}>
                               <div
                                 className={`w-8 h-8 rounded-md ${getRandomGradient()}`}
                               />
                               <div className="flex-1 truncate">
-                                {signer.address}
+                                {convertKey(signer.address)}
                               </div>
                               <div className="flex items-center gap-2 text-gray-500">
                                 <Copy
