@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
-import { convertKey, getBalanceMultiWallet } from "@/utils";
+import { convertKey, formatAleoAddress, getBalanceMultiWallet } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Pin, Trash2, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -21,14 +21,12 @@ const CardWallet = ({
     const getBalance = async () => {
       const result = await getBalanceMultiWallet(
         WalletAdapterNetwork.TestnetBeta,
-        selectedWallet!.data.wallet_address
+        wallet!.data.wallet_address
       );
       setBalanceMultiWallet(result);
     };
-    if (selectedWallet) {
-      getBalance();
-    }
-  }, [selectedWallet]);
+    getBalance();
+  }, []);
 
   return (
     <Card
@@ -44,8 +42,10 @@ const CardWallet = ({
         <div className="flex items-center gap-4">
           <div className={`h-12 w-12 rounded-lg ${wallet?.avatar}`} />
           <div className="flex flex-col">
-            <span className="font-semibold text-gray-900 truncate max-w-[160px]">
-              {removeVisibleModifier(wallet.data.wallet_address)}
+            <span className="font-semibold text-gray-900">
+              {formatAleoAddress(
+                removeVisibleModifier(wallet.data.wallet_address)
+              )}
             </span>
             <p className="text-gray-500 text-sm">${balanceMultiWallet}</p>
           </div>

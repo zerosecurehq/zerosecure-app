@@ -79,6 +79,7 @@ const Connect = () => {
     // setWallets(dataTest);
     const newWallets = await getWalletCreated();
     if (newWallets) {
+      console.log("Fetched wallets:", newWallets);
       setWallets(newWallets);
     }
   };

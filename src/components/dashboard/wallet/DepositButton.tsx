@@ -14,7 +14,11 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
-import { convertKey, credisToMicrocredis, microcredisToCredis } from "@/utils";
+import {
+  convertKey,
+  creditsToMicroCredits,
+  microCreditsToCredits,
+} from "@/utils";
 import {
   removeVisibleModifier,
   useCreateDeposit,
@@ -22,7 +26,7 @@ import {
 } from "zerosecurehq-sdk";
 import { Loader2 } from "lucide-react";
 
-const Page1 = ({ setAmount }: { setAmount: (amount: string) => void }) => {
+const Page1 = ({ setAmount }: { setAmount: (amount: number) => void }) => {
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
       <Warning
@@ -35,7 +39,7 @@ const Page1 = ({ setAmount }: { setAmount: (amount: string) => void }) => {
         <Input
           type="number"
           placeholder="0"
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => setAmount(Number(e.target.value))}
           min={0}
         />
       </div>
@@ -55,7 +59,7 @@ const Page2 = ({
   setFeeType: (type: "public" | "private") => void;
   depositType: "public" | "private";
   setDepositType: (type: "public" | "private") => void;
-  amount: string;
+  amount: number;
   selectedWallet: WalletRecordData;
 }) => {
   return (
@@ -189,14 +193,14 @@ const DepositButton = ({
   const [depositType, setDepositType] = useState<"public" | "private">(
     "public"
   );
-  const [amount, setAmount] = useState("0");
+  const [amount, setAmount] = useState(0);
   const { createDeposit, error, isProcessing, reset, txId } =
     useCreateDeposit();
   const { selectedWallet } = useAccount();
   const { getCreditsRecord } = useGetCreditsRecord();
 
   const handleDeposit = async () => {
-    if (Number(amount) <= 0) {
+    if (amount <= 0) {
       toast.error("Amount must be greater than 0");
       return;
     }
@@ -210,17 +214,18 @@ const DepositButton = ({
       // }, 1000);
       const txHash = await createDeposit(
         removeVisibleModifier(selectedWallet.data.wallet_address),
-        credisToMicrocredis(amount)
+        creditsToMicroCredits(amount)
       );
       if (txHash) {
         reset();
-        setAmount("0");
+        setAmount(0);
       }
     } else if (depositType === "private" && selectedWallet) {
       const record = await getCreditsRecord();
       if (!record) return;
       const creditsRecord = record.find(
-        (item) => microcredisToCredis(item.data.microcredits) >= Number(amount)
+        (item) =>
+          microCreditsToCredits(parseInt(item.data.microcredits)) >= amount
       );
       if (!creditsRecord) {
         toast.error("No enough credits");
@@ -235,12 +240,12 @@ const DepositButton = ({
       // }, 1000);
       const txHash = await createDeposit(
         selectedWallet.data.wallet_address,
-        credisToMicrocredis(amount),
+        creditsToMicroCredits(amount),
         creditsRecord
       );
       if (txHash) {
         reset();
-        setAmount("0");
+        setAmount(0);
       }
     }
   };
@@ -259,7 +264,7 @@ const DepositButton = ({
     <Dialog
       onOpenChange={() => {
         setStep(1);
-        setAmount("0");
+        setAmount(0);
         setDepositType("public");
         setFeeType("public");
         reset();
@@ -305,7 +310,7 @@ const DepositButton = ({
                         if (step === 2) {
                           handleDeposit();
                         }
-                        if (step === 1 && (amount === "0" || amount === "")) {
+                        if (step === 1 && amount === 0) {
                           toast("Please enter an amount");
                           return;
                         } else if (step === 1 && amount) {

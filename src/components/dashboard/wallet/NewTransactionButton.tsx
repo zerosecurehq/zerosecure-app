@@ -16,13 +16,13 @@ import { useCreateTransaction } from "zerosecurehq-sdk";
 import { toast } from "sonner";
 import useAccount from "@/stores/useAccount";
 import { Loader2 } from "lucide-react";
-import { credisToMicrocredis } from "@/utils";
+import { creditsToMicroCredits } from "@/utils";
 
 const Page1 = ({
   setAmount,
   setRecipient,
 }: {
-  setAmount: (amount: string) => void;
+  setAmount: (amount: number) => void;
   setRecipient: (address: string) => void;
 }) => {
   return (
@@ -44,7 +44,7 @@ const Page1 = ({
         <Input
           type="number"
           placeholder="0"
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => setAmount(Number(e.target.value))}
           min={0}
         />
       </div>
@@ -61,7 +61,7 @@ const Page2 = ({
   feeType: "public" | "private";
   setFeeType: (type: "public" | "private") => void;
   recipient: string;
-  amount: string;
+  amount: number;
 }) => {
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
@@ -74,7 +74,7 @@ const Page2 = ({
         <div className="p-1 rounded-md text-3xl">
           {" "}
           <span className="font-semibold">{amount}</span>
-          <span className="text-xl font-mono">.44 Aleo</span>
+          <span className="text-xl font-mono">.00 Aleo</span>
         </div>
       </div>
       <div className="w-full flex items-center">
@@ -174,7 +174,7 @@ const NewTransactionButton = ({
   const [feeType, setFeeType] = useState<"public" | "private">("public");
   const { selectedWallet } = useAccount();
   const [recipient, setRecipient] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const { createTransaction, error, isProcessing, reset, txId } =
     useCreateTransaction();
 
@@ -187,11 +187,11 @@ const NewTransactionButton = ({
     const txHash = await createTransaction(
       walletWithoutAvatar,
       recipient,
-      credisToMicrocredis(amount)
+      creditsToMicroCredits(amount)
     );
     if (txHash) {
       reset();
-      setAmount("");
+      setAmount(0);
       setRecipient("");
     }
   };
@@ -207,13 +207,15 @@ const NewTransactionButton = ({
   }, [error, txId]);
 
   return (
-    <Dialog onOpenChange={() => {
-      setStep(1);
-      setFeeType("public");
-      setRecipient("");
-      setAmount("");
-      reset();
-    }}>
+    <Dialog
+      onOpenChange={() => {
+        setStep(1);
+        setFeeType("public");
+        setRecipient("");
+        setAmount(0);
+        reset();
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="outline" className={className} disabled={isProcessing}>
           {isProcessing ? <Loader2 className="animate-spin" /> : text}
@@ -251,11 +253,11 @@ const NewTransactionButton = ({
                   {step <= 2 && (
                     <Button
                       onClick={() => {
-                        if (step === 1 && (recipient === "" || amount === "")) {
+                        if (step === 1 && (recipient === "" || amount === 0)) {
                           toast("Please fill out all the fields.");
                           return;
                         } else if (step === 1 && recipient && amount) {
-                          if (Number(amount) < 0) {
+                          if (amount < 0) {
                             toast("Amount must be greater than 0.");
                             return;
                           }

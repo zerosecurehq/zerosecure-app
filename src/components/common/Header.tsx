@@ -6,6 +6,8 @@ import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 import "@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css";
 import { Badge } from "../ui/badge";
 import useAccount from "@/stores/useAccount";
+import { formatAleoAddress } from "@/utils";
+import { removeVisibleModifier } from "zerosecurehq-sdk";
 
 const NAVIGATE_PAGES = [
   { name: "Home", icon: Home, href: "/" },
@@ -62,8 +64,10 @@ const Header = () => {
               </div>
               <div className="text-sm mt-1 flex items-center justify-between gap-2">
                 <span className="text-gray-600">multisig:</span>
-                <span className="truncate max-w-[140px] text-gray-900">
-                  {selectedWallet.data.wallet_address}
+                <span className="text-gray-900">
+                  {formatAleoAddress(
+                    removeVisibleModifier(selectedWallet.data.wallet_address)
+                  )}
                 </span>
               </div>
             </div>

@@ -7,7 +7,7 @@ import { Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
-import { getBalanceMultiWallet } from "@/utils";
+import { getBalanceMultiWallet, microCreditsToCredits } from "@/utils";
 
 const Home = () => {
   const { publicKey } = useWallet();
@@ -71,7 +71,7 @@ const Home = () => {
                   width={25}
                   height={25}
                 />
-                <span>{balanceMultiWallet} Aleo</span>
+                <span>{microCreditsToCredits(balanceMultiWallet)} Aleo</span>
               </div>
             </div>
           </CardContent>

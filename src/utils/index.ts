@@ -10,12 +10,19 @@ export function convertKey(input: string): string {
   return `${firstPart}...${lastPart}`;
 }
 
-export function credisToMicrocredis(credis: string): number {
-  return parseInt(credis) * 1_000_000;
+export function formatAleoAddress(address: string): string {
+  const firstPart = address.slice(0, 8);
+  const lastPart = address.slice(-5);
+
+  return `${firstPart}...${lastPart}`;
 }
 
-export function microcredisToCredis(microcredis: string): number {
-  return parseInt(microcredis) / 1_000_000;
+export function creditsToMicroCredits(credits: number): number {
+  return credits * 1_000_000;
+}
+
+export function microCreditsToCredits(microCredits: number): number {
+  return microCredits / 1_000_000;
 }
 
 export const getBalanceMultiWallet = async (
@@ -23,5 +30,5 @@ export const getBalanceMultiWallet = async (
   multisigWalletAddress: string
 ) => {
   const result = await getMultisigWalletBalance(network, multisigWalletAddress);
-  return result
+  return result;
 };
