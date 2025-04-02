@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Copy,
   Loader2,
+  Loader2Icon,
   Plus,
   Share,
   Trash,
@@ -32,14 +33,16 @@ import {
 } from "@/components/ui/dialog";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import {
-  removeVisibleModifier,
+  getRandomAddressFromServer,
   useCreateMultisigWallet,
   useGetWalletCreated,
+  WalletRecord,
 } from "zerosecurehq-sdk";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import useAccount, { getRandomGradient } from "@/stores/useAccount";
 import { convertKey } from "@/utils";
+import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 
 interface Signer {
   name: string;
@@ -49,7 +52,7 @@ interface Signer {
 const NewAccountButton = () => {
   const { publicKey } = useWallet();
   const [currentStep, setCurrentStep] = useState(1);
-  const { selectedWallet, setWallets } = useAccount();
+  const { selectedWallet, setWallets, setSelectedWallet } = useAccount();
   const [signerList, setSignerList] = useState<Signer[]>([]);
   const [newSigner, setNewSigner] = useState<Signer>({ name: "", address: "" });
   const [threshold, setThreshold] = useState("1");
@@ -68,21 +71,32 @@ const NewAccountButton = () => {
       //     threshold: Number(threshold),
       //   });
       // }, 1000);
+      const network = WalletAdapterNetwork.TestnetBeta;
+      const address = await getRandomAddressFromServer(network);
       const txHash = await createMultisigWallet({
         owners: [
           publicKey as string,
           ...signerList.map((signer) => signer.address),
         ],
         threshold: Number(threshold),
+        address,
       });
       if (txHash) {
         reset();
         toast("Wallet created successfully");
         setNewSigner({ name: "", address: "" });
         setSignerList([]);
-        const refreshWalletCreated = await getWalletCreated();
+        const refreshWalletCreated: WalletRecord[] | void =
+          await getWalletCreated();
+        console.log(refreshWalletCreated)
         if (refreshWalletCreated) {
           setWallets(refreshWalletCreated);
+          const newSelected = refreshWalletCreated.find(
+            (wallet) => wallet.data.wallet_address === address
+          );
+          if (newSelected) {
+            setSelectedWallet(newSelected);
+          }
         }
       }
     } catch (error) {
@@ -489,7 +503,7 @@ const NewAccountButton = () => {
                         }
                       }}
                     >
-                      {currentStep === 3 ? "Create Wallet" : "Next"}
+                      {currentStep === 3 ? isProcessing ? <Loader2Icon className="animate-spin" /> : "Create Wallet" : "Next"}
                     </Button>
                   </div>
                 )}

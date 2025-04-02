@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
-import { convertKey, formatAleoAddress, getBalanceMultiWallet } from "@/utils";
+import { formatAleoAddress, getBalanceMultiWallet } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Pin, Trash2, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,7 +33,7 @@ const CardWallet = ({
       key={wallet.data.wallet_address}
       className={`p-4 border rounded-xl shadow-md  hover:shadow-lg transition-shadow ${
         selectedWallet?.data?.wallet_address === wallet.data.wallet_address
-          ? "pointer-events-none opacity-60"
+          ? "opacity-60"
           : "cursor-pointer bg-white"
       }`}
       onClick={() => setSelectedWallet(wallet)}

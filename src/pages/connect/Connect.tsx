@@ -90,12 +90,7 @@ const Connect = () => {
       return;
     }
     setPublicKey(publicKey);
-    const storedWallets = JSON.parse(localStorage.getItem("accounts") || "{}");
-    if (storedWallets[publicKey]) {
-      setPublicKey(publicKey);
-    } else {
-      fetchWallets();
-    }
+    fetchWallets();
   }, [publicKey]);
 
   return (

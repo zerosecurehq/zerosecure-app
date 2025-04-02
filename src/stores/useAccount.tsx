@@ -60,11 +60,19 @@ const updateStoredAccount = (
   setLocalStorage("accounts", accounts);
 };
 
-const enhanceWallets = (wallets: WalletRecordData[]) =>
-  wallets.map((wallet) => ({
-    ...wallet,
-    avatar: wallet.avatar || getRandomGradient(),
-  }));
+const enhanceWallets = (wallets: WalletRecordData[], publicKey: string) => {
+  const walletsOld = getLocalStorage<Record<string, any>>("accounts", {})[
+    publicKey
+  ].wallets;
+  const newWallets = wallets.map((wallet) => {
+    const oldWallet = walletsOld.find(
+      (w: WalletRecordData) => w.id === wallet.id
+    );
+    if (oldWallet) return oldWallet;
+    return { ...wallet, avatar: wallet.avatar || getRandomGradient() };
+  });
+  return newWallets
+};
 
 const useAccount = create<AccountState>((set) => ({
   publicKey: null,
@@ -80,7 +88,7 @@ const useAccount = create<AccountState>((set) => ({
   setWallets: (wallets) => {
     set((state) => {
       if (!state.publicKey) return {};
-      const enhanced = enhanceWallets(wallets);
+      const enhanced = enhanceWallets(wallets, state.publicKey);
       updateStoredAccount(state.publicKey, { wallets: enhanced });
       return { wallets: enhanced };
     });
