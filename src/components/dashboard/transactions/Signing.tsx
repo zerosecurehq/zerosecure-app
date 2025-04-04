@@ -1,103 +1,76 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCaption } from "@/components/ui/table";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
-import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import {
   ConfirmTransferTicketRecord,
-  useApplyConfirmTransferTicket,
   useGetConfirmTransferTicket,
 } from "zerosecurehq-sdk";
+import SigningRaw from "./SigningRaw";
 
-const transactions = [
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: "3",
-    signed: "2",
-  },
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: "3",
-    signed: "2",
-  },
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: "3",
-    signed: "2",
-  },
-  // {
-  //   action: "Smart Contract Deployed",
-  //   createdBy: "0x2F8D...C3E4",
-  //   time: "11:20 AM",
-  //   status: "Success",
-  // },
-  // {
-  //   action: "Liquidity Added",
-  //   createdBy: "0x55AA...FF99",
-  //   time: "1:45 PM",
-  //   status: "Pending",
-  // },
-  // {
-  //   action: "Vote Submitted",
-  //   createdBy: "0x7B3E...11DD",
-  //   time: "3:30 PM",
-  //   status: "Failed",
-  // },
-];
+// const fakeTransferTickets: ConfirmTransferTicketRecord[] = [
+//   {
+//     id: "rec_001",
+//     spent: false,
+//     recordName: "confirm_transfer_ticket",
+//     name: "ticket_001",
+//     owner: "aleo1exampleowneraddress1",
+//     program_id: "transfer_program_v1",
+//     status: "confirmed",
+//     data: {
+//       wallet_address: "aleo1walletaddress001",
+//       amount: "100",
+//       transfer_id: "transfer_abc_001",
+//       to: "aleo1recipient001"
+//     }
+//   },
+//   {
+//     id: "rec_002",
+//     spent: true,
+//     recordName: "confirm_transfer_ticket",
+//     name: "ticket_002",
+//     owner: "aleo1exampleowneraddress2",
+//     program_id: "transfer_program_v1",
+//     status: "spent",
+//     data: {
+//       wallet_address: "aleo1walletaddress002",
+//       amount: "250",
+//       transfer_id: "transfer_abc_002",
+//       to: "aleo1recipient002"
+//     }
+//   },
+//   {
+//     id: "rec_003",
+//     spent: false,
+//     recordName: "confirm_transfer_ticket",
+//     name: "ticket_003",
+//     owner: "aleo1exampleowneraddress3",
+//     program_id: "transfer_program_v1",
+//     status: "pending",
+//     data: {
+//       wallet_address: "aleo1walletaddress003",
+//       amount: "50",
+//       transfer_id: "transfer_abc_003",
+//       to: "aleo1recipient003"
+//     }
+//   }
+// ];
 
 const Signing = () => {
   const { publicKey } = useWallet();
   const { getConfirmTransferTicket, error, isProcessing, reset } =
     useGetConfirmTransferTicket();
-  const {
-    applyConfirmTransferTicket,
-    error: errorConfirm,
-    isProcessing: isProcessingConfirm,
-    reset: resetConfirm,
-    txId: txIdConfirm,
-  } = useApplyConfirmTransferTicket();
+
   const [signing, setSigning] = useState<ConfirmTransferTicketRecord[]>([]);
 
-  const handleGetSigning = async () => {
+  const getSigning = async () => {
     setSigning(await getConfirmTransferTicket());
-  };
-
-  const handleApplyConfirm = async (
-    dataConfirm: ConfirmTransferTicketRecord
-  ) => {
-    const txHash = await applyConfirmTransferTicket(dataConfirm);
-    if (txHash) {
-      resetConfirm();
-      handleGetSigning();
-    }
   };
 
   useEffect(() => {
     if (publicKey) {
-      handleGetSigning();
+      getSigning();
     }
   }, [publicKey]);
-
-  useEffect(() => {
-    if (errorConfirm) {
-      toast(`Error confirm ${errorConfirm.message}`);
-      resetConfirm();
-    }
-  }, [errorConfirm]);
 
   return (
     <article>
@@ -109,33 +82,10 @@ const Signing = () => {
           {signing.length === 0 && (
             <p className="text-center mt-3">No signing transaction</p>
           )}
-          {signing.map((item, index) => (
-            <TableRow key={index} className="text-center relative">
-              <TableCell className="font-medium">{item?.data.to}</TableCell>
-              <TableCell>{item?.data.amount}</TableCell>
-              {/* @TODO check field time */}
-              <TableCell>{item?.data.transfer_id}</TableCell>
-              <TableCell>
-                <Button
-                  variant={"outline"}
-                  onClick={() => handleApplyConfirm(item)}
-                  disabled={isProcessingConfirm}
-                >
-                  {isProcessingConfirm ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    "Sign Transaction"
-                  )}
-                </Button>
-              </TableCell>
-              <Badge
-                variant={"outline"}
-                className="absolute top-1/2 right-0 -translate-y-1/2 rounded-full"
-              >
-                2/3
-              </Badge>
-            </TableRow>
-          ))}
+          {signing.length > 0 &&
+            signing.map((item, index) => (
+              <SigningRaw key={index} data={item} getSigning={getSigning} />
+            ))}
         </TableBody>
       </Table>
     </article>

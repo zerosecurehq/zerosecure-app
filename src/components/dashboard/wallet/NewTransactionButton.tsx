@@ -192,6 +192,7 @@ const NewTransactionButton = ({
     if (txHash) {
       reset();
       setAmount(0);
+      toast("Transfer successfully");
       setRecipient("");
     }
   };
@@ -268,8 +269,17 @@ const NewTransactionButton = ({
                         }
                       }}
                       variant={"outline"}
+                      disabled={isProcessing}
                     >
-                      Next
+                      {step === 2 ? (
+                        isProcessing ? (
+                          <Loader2 />
+                        ) : (
+                          "Transfer"
+                        )
+                      ) : (
+                        "Next"
+                      )}
                     </Button>
                   )}
                   {step > 1 && step <= 2 && (

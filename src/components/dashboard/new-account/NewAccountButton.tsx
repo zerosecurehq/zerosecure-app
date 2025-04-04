@@ -54,7 +54,10 @@ const NewAccountButton = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const { selectedWallet, setWallets, setSelectedWallet } = useAccount();
   const [signerList, setSignerList] = useState<Signer[]>([]);
-  const [newSigner, setNewSigner] = useState<Signer>({ name: "", address: "" });
+  const [newSigner, setNewSigner] = useState<Signer>({
+    name: "",
+    address: "",
+  });
   const [threshold, setThreshold] = useState("1");
   const { createMultisigWallet, error, isProcessing, txId, reset } =
     useCreateMultisigWallet();
@@ -74,10 +77,7 @@ const NewAccountButton = () => {
       const network = WalletAdapterNetwork.TestnetBeta;
       const address = await getRandomAddressFromServer(network);
       const txHash = await createMultisigWallet({
-        owners: [
-          publicKey as string,
-          ...signerList.map((signer) => signer.address),
-        ],
+        owners: [...signerList.map((signer) => signer.address)],
         threshold: Number(threshold),
         address,
       });
@@ -88,7 +88,6 @@ const NewAccountButton = () => {
         setSignerList([]);
         const refreshWalletCreated: WalletRecord[] | void =
           await getWalletCreated();
-        console.log(refreshWalletCreated)
         if (refreshWalletCreated) {
           setWallets(refreshWalletCreated);
           const newSelected = refreshWalletCreated.find(
@@ -221,15 +220,15 @@ const NewAccountButton = () => {
                         <Card className="shadow-sm hover:shadow-md transition-shadow border border-gray-200 rounded-lg p-3 pr-8 relative">
                           <CardHeader className="p-0 mb-1">
                             <CardTitle className="text-xs font-semibold text-gray-700">
-                              Me
+                              Signer created
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="p-0 space-y-1">
                             <p className="text-sm font-medium text-gray-800 truncate">
-                              Signer name: {selectedWallet?.name}
+                              Signer name: Me
                             </p>
                             <p className="text-sm text-gray-500 truncate max-w-md">
-                              Signer wallet: {publicKey as string}
+                              Signer wallet: {publicKey}
                             </p>
                           </CardContent>
                         </Card>
@@ -318,7 +317,7 @@ const NewAccountButton = () => {
                             return;
                           }
 
-                          if (signerList.length >= 7) {
+                          if (signerList.length >= 8) {
                             toast("Maximum 8 signers allowed!");
                             return;
                           }
@@ -502,8 +501,17 @@ const NewAccountButton = () => {
                           handleCreateMultiWallet();
                         }
                       }}
+                      disabled={isProcessing}
                     >
-                      {currentStep === 3 ? isProcessing ? <Loader2Icon className="animate-spin" /> : "Create Wallet" : "Next"}
+                      {currentStep === 3 ? (
+                        isProcessing ? (
+                          <Loader2Icon className="animate-spin" />
+                        ) : (
+                          "Create Wallet"
+                        )
+                      ) : (
+                        "Next"
+                      )}
                     </Button>
                   </div>
                 )}

@@ -1,104 +1,83 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "../../ui/button";
 import {
   Table,
   TableBody,
   TableCaption,
-  TableCell,
-  TableRow,
 } from "@/components/ui/table";
 import {
   ExecuteTicketRecord,
-  useApplyExecuteTicket,
   useGetExecuteTicket,
 } from "zerosecurehq-sdk";
 import { useEffect, useState } from "react";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import ExcutingRaw from "./ExcutingRaw";
 
-const transactions = [
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: 3,
-    signed: 2,
-  },
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: 3,
-    signed: 2,
-  },
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: 3,
-    signed: 3,
-  },
-  // {
-  //   action: "Smart Contract Deployed",
-  //   createdBy: "0x2F8D...C3E4",
-  //   time: "11:20 AM",
-  //   status: "Success",
-  // },
-  // {
-  //   action: "Liquidity Added",
-  //   createdBy: "0x55AA...FF99",
-  //   time: "1:45 PM",
-  //   status: "Pending",
-  // },
-  // {
-  //   action: "Vote Submitted",
-  //   createdBy: "0x7B3E...11DD",
-  //   time: "3:30 PM",
-  //   status: "Failed",
-  // },
-];
+// const fakeExecuteTickets: ExecuteTicketRecord[] = [
+//   {
+//     id: "exec_001",
+//     spent: false,
+//     recordName: "execute_ticket",
+//     name: "ticket_exec_001",
+//     owner: "aleo1ownerexec001",
+//     program_id: "execute_program_v1",
+//     status: "ready",
+//     data: {
+//       wallet_address: "aleo1walletexec001",
+//       amount: "500",
+//       transfer_id: "transfer_exec_001",
+//       to: "aleo1recipientexec001"
+//     }
+//   },
+//   {
+//     id: "exec_002",
+//     spent: true,
+//     recordName: "execute_ticket",
+//     name: "ticket_exec_002",
+//     owner: "aleo1ownerexec002",
+//     program_id: "execute_program_v1",
+//     status: "executed",
+//     data: {
+//       wallet_address: "aleo1walletexec002",
+//       amount: "200",
+//       transfer_id: "transfer_exec_002",
+//       to: "aleo1recipientexec002"
+//     }
+//   },
+//   {
+//     id: "exec_003",
+//     spent: false,
+//     recordName: "execute_ticket",
+//     name: "ticket_exec_003",
+//     owner: "aleo1ownerexec003",
+//     program_id: "execute_program_v1",
+//     status: "pending",
+//     data: {
+//       wallet_address: "aleo1walletexec003",
+//       amount: "300",
+//       transfer_id: "transfer_exec_003",
+//       to: "aleo1recipientexec003"
+//     }
+//   }
+// ];
+
 
 const Signing = () => {
   const { publicKey } = useWallet();
   const { getExecuteTicket, error, isProcessing, reset } =
     useGetExecuteTicket();
-  const {
-    applyExecuteTicket,
-    error: errorExcute,
-    isProcessing: isProcessingExcute,
-    reset: resetExcute,
-    txId: txIdExcute,
-  } = useApplyExecuteTicket();
   const [excute, setExcute] = useState<ExecuteTicketRecord[]>([]);
 
-  const handleGetExcute = async () => {
+  const getExcute = async () => {
     const result = await getExecuteTicket();
     if (result !== undefined) {
       setExcute(result);
     }
   };
 
-  const handleApplyExcute = async (dataExcute: ExecuteTicketRecord) => {
-    const txHash = await applyExecuteTicket(dataExcute);
-    if (txHash) {
-      resetExcute();
-      handleGetExcute();
-    }
-  };
-
   useEffect(() => {
     if (publicKey) {
-      handleGetExcute();
+      getExcute();
     }
   }, [publicKey]);
-
-  useEffect(() => {
-    if (errorExcute) {
-      toast(`Error excute: ${errorExcute.message}`);
-      resetExcute();
-    }
-  }, [errorExcute]);
 
   return (
     <article>
@@ -110,36 +89,8 @@ const Signing = () => {
           {excute.length === 0 && (
             <p className="text-center mt-3">No signing transaction</p>
           )}
-          {excute.map((item, index) => (
-            <TableRow key={index} className="text-center relative">
-              <TableCell className="font-medium">{item.data.to}</TableCell>
-              <TableCell>{item.data.amount}</TableCell>
-              {/* @TODO check field time */}
-              <TableCell>{item.data.transfer_id}</TableCell>
-              <TableCell>
-                <Button
-                  variant={"outline"}
-                  onClick={() => handleApplyExcute(item)}
-                >
-                  {isProcessingExcute ? <Loader2 className="animate-spin" /> : "Excute"}
-                </Button>
-              </TableCell>
-              {/* {transaction.signed !== transaction.signers ? (
-                <Badge
-                  variant={"outline"}
-                  className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full"
-                >
-                  {transaction.signed}/{transaction.signers}
-                </Badge>
-              ) : (
-                <Badge
-                  variant={"outline"}
-                  className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full bg-gradient-primary text-white"
-                >
-                  {transaction.signed}/{transaction.signers}
-                </Badge>
-              )} */}
-            </TableRow>
+          {excute.length > 0 && excute.map((item, index) => (
+            <ExcutingRaw key={index} data={item} getExcute={getExcute} />
           ))}
         </TableBody>
       </Table>

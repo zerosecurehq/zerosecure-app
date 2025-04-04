@@ -218,6 +218,7 @@ const DepositButton = ({
       );
       if (txHash) {
         reset();
+        toast("Desposit successful");
         setAmount(0);
       }
     } else if (depositType === "private" && selectedWallet) {
@@ -322,8 +323,17 @@ const DepositButton = ({
                         }
                       }}
                       variant={"outline"}
+                      disabled={isProcessing}
                     >
-                      {step === 2 ? "Deposit" : "Next"}
+                      {step === 2 ? (
+                        isProcessing ? (
+                          <Loader2 className="animate-spin" />
+                        ) : (
+                          "Deposit"
+                        )
+                      ) : (
+                        "Next"
+                      )}
                     </Button>
                   )}
                   {step > 1 && step <= 2 && (
