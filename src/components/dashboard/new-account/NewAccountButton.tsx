@@ -41,7 +41,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import useAccount, { getRandomGradient } from "@/stores/useAccount";
-import { convertKey } from "@/utils";
+import { convertKey, formatAleoAddress } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 
 interface Signer {
@@ -228,7 +228,8 @@ const NewAccountButton = () => {
                               Signer name: Me
                             </p>
                             <p className="text-sm text-gray-500 truncate max-w-md">
-                              Signer wallet: {publicKey}
+                              Signer wallet:{" "}
+                              {formatAleoAddress(publicKey as string)}
                             </p>
                           </CardContent>
                         </Card>
@@ -247,7 +248,8 @@ const NewAccountButton = () => {
                                   Signer name: {signer.name}
                                 </p>
                                 <p className="text-sm text-gray-500 truncate max-w-md">
-                                  Signer wallet: {signer.address}
+                                  Signer wallet:{" "}
+                                  {formatAleoAddress(signer.address)}
                                 </p>
                               </CardContent>
                             </Card>
@@ -298,6 +300,7 @@ const NewAccountButton = () => {
                         variant="ghost"
                         className="w-full flex justify-center"
                         onClick={() => {
+                          console.log("newSigner", newSigner);
                           if (
                             !newSigner.name.trim() ||
                             !newSigner.address.trim()
@@ -311,7 +314,8 @@ const NewAccountButton = () => {
                           if (
                             signerList.some(
                               (s) => s.address === newSigner.address
-                            )
+                            ) ||
+                            newSigner.address === publicKey
                           ) {
                             toast("This address already exists!");
                             return;
@@ -342,7 +346,7 @@ const NewAccountButton = () => {
                       <div className="flex items-center">
                         <Select
                           onValueChange={(value) => {
-                            if (parseInt(value) > signerList.length) {
+                            if (parseInt(value) - 1 > signerList.length) {
                               toast(
                                 "Threshold must be less than or equal to the number of signers"
                               );
@@ -361,8 +365,8 @@ const NewAccountButton = () => {
                               {[...Array(8)].map((_, i) => (
                                 <SelectItem
                                   key={i}
-                                  value={String(i + 1)}
-                                  disabled={i + 1 > signerList.length}
+                                  value={(i + 1).toString()}
+                                  disabled={i > signerList.length}
                                 >
                                   {i + 1}
                                 </SelectItem>
@@ -396,7 +400,7 @@ const NewAccountButton = () => {
                               className={`w-8 h-8 rounded-md ${getRandomGradient()}`}
                             />
                             <div className="flex-1 truncate">
-                              {convertKey(publicKey as string)}
+                              {formatAleoAddress(publicKey as string)}
                             </div>
                             <div className="flex items-center gap-2 text-gray-500">
                               <Copy
@@ -418,7 +422,7 @@ const NewAccountButton = () => {
                                 className={`w-8 h-8 rounded-md ${getRandomGradient()}`}
                               />
                               <div className="flex-1 truncate">
-                                {convertKey(signer.address)}
+                                {formatAleoAddress(signer.address)}
                               </div>
                               <div className="flex items-center gap-2 text-gray-500">
                                 <Copy
