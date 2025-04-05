@@ -1,12 +1,5 @@
-import {
-  Table,
-  TableBody,
-  TableCaption,
-} from "@/components/ui/table";
-import {
-  ExecuteTicketRecord,
-  useGetExecuteTicket,
-} from "zerosecurehq-sdk";
+import { Table, TableBody, TableCaption } from "@/components/ui/table";
+import { ExecuteTicketRecord, useGetExecuteTicket } from "zerosecurehq-sdk";
 import { useEffect, useState } from "react";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import ExcutingRaw from "./ExcutingRaw";
@@ -59,7 +52,6 @@ import ExcutingRaw from "./ExcutingRaw";
 //   }
 // ];
 
-
 const Signing = () => {
   const { publicKey } = useWallet();
   const { getExecuteTicket, error, isProcessing, reset } =
@@ -83,15 +75,22 @@ const Signing = () => {
     <article>
       <Table>
         <TableCaption className="caption-top text-sm">
-          A list of your wait for signing transactions.
+          Your execute transactions will be listed here.
         </TableCaption>
         <TableBody>
-          {excute.length === 0 && (
-            <p className="text-center mt-3">No signing transaction</p>
+          {isProcessing ? (
+            <p className="text-center mt-3">
+              Please wait while we are fetching your execute transactions ...
+            </p>
+          ) : (
+            excute.length === 0 && (
+              <p className="text-center mt-3">No execute transactions</p>
+            )
           )}
-          {excute.length > 0 && excute.map((item, index) => (
-            <ExcutingRaw key={index} data={item} getExcute={getExcute} />
-          ))}
+          {excute.length > 0 &&
+            excute.map((item, index) => (
+              <ExcutingRaw key={index} data={item} getExcute={getExcute} />
+            ))}
         </TableBody>
       </Table>
     </article>

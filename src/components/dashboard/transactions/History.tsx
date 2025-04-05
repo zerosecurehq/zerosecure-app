@@ -1,11 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
 const transactions = [
   {
@@ -53,9 +47,9 @@ const History = () => {
   return (
     <article>
       <Table>
-        <TableCaption className="caption-top text-sm">
+        {/* <TableCaption className="caption-top text-sm">
           A list of your history transactions.
-        </TableCaption>
+        </TableCaption> */}
         <TableBody>
           {transactions.map((transaction, index) => (
             <TableRow key={index} className="text-center relative">
@@ -66,7 +60,9 @@ const History = () => {
                 <span className="font-semibold text-sm">Finalized</span>
               </TableCell>
               <TableCell>
-                <Button variant={"outline"} className="">Sign Transaction</Button>
+                <Button variant={"outline"} className="">
+                  Sign Transaction
+                </Button>
               </TableCell>
             </TableRow>
           ))}

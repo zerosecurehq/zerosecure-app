@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import useAccount from "@/stores/useAccount";
+import { formatAleoAddress } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 import {
   ExecuteTicketRecord,
   getCurrentTransactionConfirmations,
+  removeVisibleModifier,
   useApplyExecuteTicket,
 } from "zerosecurehq-sdk";
 
@@ -61,11 +63,15 @@ const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
   };
 
   return (
-    <TableRow className="text-center relative">
-      <TableCell className="font-medium">{data.data.to}</TableCell>
-      <TableCell>{data.data.amount}</TableCell>
-      {/* @TODO check field time */}
-      <TableCell>{data.data.transfer_id}</TableCell>
+    <TableRow className="text-center relative cursor-pointer">
+      <TableCell className="font-medium">
+        {formatAleoAddress(data.data.to)}
+      </TableCell>
+      <TableCell>{removeVisibleModifier(data.data.amount)}</TableCell>
+      <TableCell>
+        {/* @TODO transaction creation time cant not be obtained from local wallet, will need database for it*/}
+        {new Date(Date.now()).toLocaleString()}
+      </TableCell>
       <TableCell>
         <Button
           variant={"outline"}
@@ -74,12 +80,12 @@ const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
         >
           {isProcessing ? <Loader2 className="animate-spin" /> : "Excute"}
         </Button>
-      </TableCell>
+      </TableCell>{" "}
       {confirmed !==
       parseInt((selectedWallet?.data.threshold || "0").toString()) ? (
         <Badge
           variant={"outline"}
-          className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full"
+          className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full mr-2"
         >
           {`${confirmed}/${parseInt(
             (selectedWallet?.data.threshold || "0").toString()
@@ -88,7 +94,7 @@ const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
       ) : (
         <Badge
           variant={"outline"}
-          className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full bg-gradient-primary text-white"
+          className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full bg-gradient-primary text-white mr-2"
         >
           {`${confirmed}/${parseInt(
             (selectedWallet?.data.threshold || "0").toString()

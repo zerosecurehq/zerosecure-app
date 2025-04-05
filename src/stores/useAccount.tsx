@@ -61,9 +61,9 @@ const updateStoredAccount = (
 };
 
 const enhanceWallets = (wallets: WalletRecordData[], publicKey: string) => {
-  const walletsOld = getLocalStorage<Record<string, any>>("accounts", {})[
-    publicKey
-  ].wallets;
+  const walletsOld =
+    getLocalStorage<Record<string, any>>("accounts", {})[publicKey]?.wallets ||
+    [];
   const newWallets = wallets.map((wallet) => {
     const oldWallet = walletsOld.find(
       (w: WalletRecordData) => w.id === wallet.id
@@ -71,7 +71,7 @@ const enhanceWallets = (wallets: WalletRecordData[], publicKey: string) => {
     if (oldWallet) return oldWallet;
     return { ...wallet, avatar: wallet.avatar || getRandomGradient() };
   });
-  return newWallets
+  return newWallets;
 };
 
 const useAccount = create<AccountState>((set) => ({

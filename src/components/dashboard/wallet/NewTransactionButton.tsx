@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/dialog";
 
 import { useEffect, useState } from "react";
-import { useCreateTransaction } from "zerosecurehq-sdk";
+import { removeVisibleModifier, useCreateTransaction } from "zerosecurehq-sdk";
 import { toast } from "sonner";
 import useAccount from "@/stores/useAccount";
 import { Loader2 } from "lucide-react";
-import { creditsToMicroCredits } from "@/utils";
+import { creditsToMicroCredits, formatAleoAddress } from "@/utils";
 
 const Page1 = ({
   setAmount,
@@ -99,7 +99,7 @@ const Page2 = ({
             maskImage: "linear-gradient(90deg, transparent, #ccc, transparent)",
           }}
         ></div>
-        <span>{recipient}</span>
+        <span>{formatAleoAddress(removeVisibleModifier(recipient))}</span>
       </div>
       <div className="w-full flex items-center">
         <span className="opacity-75">Execution Fee</span>
@@ -192,8 +192,9 @@ const NewTransactionButton = ({
     if (txHash) {
       reset();
       setAmount(0);
-      toast("Transfer successfully");
+      toast("Create transaction successfully");
       setRecipient("");
+      setStep(1);
     }
   };
 

@@ -15,8 +15,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
 import {
-  convertKey,
   creditsToMicroCredits,
+  formatAleoAddress,
   microCreditsToCredits,
 } from "@/utils";
 import {
@@ -87,10 +87,8 @@ const Page2 = ({
           }}
         ></div>
         <span>
-          {convertKey(
-            removeVisibleModifier(
-              selectedWallet ? selectedWallet.data.wallet_address : ""
-            )
+          {formatAleoAddress(
+            removeVisibleModifier(selectedWallet.data.wallet_address)
           )}
         </span>
       </div>

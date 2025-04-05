@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
 import { formatAleoAddress, getBalanceMultiWallet } from "@/utils";
@@ -5,6 +6,10 @@ import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Pin, Trash2, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { removeVisibleModifier } from "zerosecurehq-sdk";
+
+// @TODO import it from sdk instead (sdk doesn't have it yet)
+const ZERO_ADDRESS =
+  "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc";
 
 const CardWallet = ({
   wallet,
@@ -27,6 +32,10 @@ const CardWallet = ({
     };
     getBalance();
   }, []);
+
+  let numberOfSigners = wallet.data.owners.filter(
+    (owner) => removeVisibleModifier(owner) !== ZERO_ADDRESS
+  ).length;
 
   return (
     <Card
@@ -52,6 +61,10 @@ const CardWallet = ({
         </div>
 
         <div className="flex items-center gap-3">
+          <Badge>
+            {parseInt(wallet.data.threshold as unknown as string)}/
+            {numberOfSigners}
+          </Badge>
           {isPinned ? (
             <Trash2
               className="text-red-500 hover:text-red-700 cursor-pointer"
