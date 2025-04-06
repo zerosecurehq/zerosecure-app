@@ -6,8 +6,10 @@ import NewAccountButton from "@/components/dashboard/new-account/NewAccountButto
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
 import CardWallet from "./CardWallet";
-import { useGetWalletCreated } from "zerosecurehq-sdk";
-import { useEffect } from "react";
+import { removeVisibleModifier, useGetWalletCreated } from "zerosecurehq-sdk";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import CardWalletSkeleton from "./CardWalletSkeleton";
 
 const dataTest: WalletRecordData[] = [
   {
@@ -73,7 +75,24 @@ const Connect = () => {
   const { wallets, pinnedWallets, togglePinnedWallet, selectedWallet } =
     useAccount();
   const { resetAccount, setWallets, setPublicKey } = useAccount();
-  const { getWalletCreated } = useGetWalletCreated();
+  const { getWalletCreated, isProcessing, reset } = useGetWalletCreated();
+  const [search, setSearch] = useState<string>("");
+  const [filteredWallets, setFilteredWallets] = useState<WalletRecordData[]>(
+    []
+  );
+  const [filteredPinnedWallets, setFilteredPinnedWallets] = useState<
+    WalletRecordData[]
+  >([]);
+  const selectedInSearch = (() => {
+    if (!publicKey) return false;
+    if (search.trim() === "") return true;
+    if (!selectedWallet) return false;
+    const selectedData = JSON.parse(localStorage.getItem("name") || "{}");
+    const walletKey = `${removeVisibleModifier(
+      selectedWallet?.data.wallet_address
+    )}:${publicKey}`;
+    return selectedData[walletKey] && selectedData[walletKey].includes(search);
+  })();
 
   const fetchWallets = async () => {
     // setWallets(dataTest);
@@ -81,6 +100,7 @@ const Connect = () => {
     if (newWallets) {
       console.log("Fetched wallets:", newWallets);
       setWallets(newWallets);
+      reset();
     }
   };
 
@@ -93,6 +113,92 @@ const Connect = () => {
     fetchWallets();
   }, [publicKey]);
 
+  useEffect(() => {
+    const storedNames = localStorage.getItem("name");
+    const parsedNames: Record<string, string> = storedNames
+      ? JSON.parse(storedNames)
+      : {};
+
+    const filteredWallets = wallets.filter((wallet) => {
+      const walletName =
+        parsedNames[
+          `${removeVisibleModifier(wallet.data.wallet_address)}:${publicKey}`
+        ] ||
+        wallet.name ||
+        "";
+      return (
+        search === "" || walletName.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+    const filteredPinnedWallets = pinnedWallets.filter((wallet) => {
+      const walletName =
+        parsedNames[
+          `${removeVisibleModifier(wallet.data.wallet_address)}:${publicKey}`
+        ] ||
+        wallet.name ||
+        "";
+      return (
+        search === "" || walletName.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+    setFilteredPinnedWallets(filteredPinnedWallets);
+    setFilteredWallets(filteredWallets);
+  }, [search, wallets, pinnedWallets]);
+
+  if (isProcessing) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <div className="mt-16">
+          <div className="max-w-3xl mx-auto py-10">
+            <div className="flex justify-between items-center mb-6">
+              <Skeleton className="w-52 h-8 rounded-full" />
+              <Skeleton className="w-36 h-8" />
+            </div>
+
+            {/* Search + Sort */}
+            <div className="flex flex-col gap-4 bg-white p-6 rounded-xl shadow">
+              <div className="w-full flex items-center justify-between">
+                <Skeleton className="w-[500px] h-8" />
+                <Skeleton className="w-32 h-5 rounded-full" />
+              </div>
+
+              <div>
+                <Skeleton className="w-20 h-5 rounded-full mb-2" />
+                <div className="border border-dashed border-gray-300 p-2 text-gray-500 text-center rounded-lg space-y-2">
+                  {[...Array(3)].map((_, i) => (
+                    <CardWalletSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 cursor-pointer">
+              <Skeleton className="w-20 h-5 rounded-full mb-2" />
+              </div>
+
+              <div>
+                <Skeleton className="w-20 h-5 rounded-full mb-2" />
+                <div className="space-y-2">
+                  {[...Array(3)].map((_, i) => (
+                    <CardWalletSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+              
+            </div>
+
+            {/* Import Safe */}
+            <div className="mt-6 flex flex-col items-center gap-4">
+              <p className="text-gray-600 text-sm font-bold">
+              <Skeleton className="w-96 h-5 rounded-full mb-2" />
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -101,7 +207,7 @@ const Connect = () => {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">My accounts</h1>
             <div className="flex gap-4">
-              {publicKey && <NewAccountButton />}
+              {publicKey && <NewAccountButton reset={reset} />}
             </div>
           </div>
 
@@ -111,6 +217,8 @@ const Connect = () => {
               <Input
                 placeholder="Search your wallet name"
                 className="w-full md:w-2/3"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
               <div className="text-gray-500 text-sm self-center">
                 Sort by: Most recent
@@ -124,10 +232,11 @@ const Connect = () => {
                 <span className="text font-medium">Pinned</span>
               </h2>
               <div className="border border-dashed border-gray-300 p-2 text-gray-500 text-center rounded-lg space-y-2">
-                {pinnedWallets.length > 0 ? (
+                {filteredPinnedWallets.length > 0 ? (
                   <>
                     {selectedWallet &&
-                      pinnedWallets.some(
+                      selectedInSearch &&
+                      filteredPinnedWallets.some(
                         (w) =>
                           w.data.wallet_address ===
                           selectedWallet.data.wallet_address
@@ -139,7 +248,7 @@ const Connect = () => {
                           togglePin={() => togglePinnedWallet(selectedWallet)}
                         />
                       )}
-                    {pinnedWallets
+                    {filteredPinnedWallets
                       .filter(
                         (wallet) =>
                           !selectedWallet ||
@@ -171,41 +280,49 @@ const Connect = () => {
             </div>
 
             <div className="space-y-2">
-              {selectedWallet &&
-                !pinnedWallets.some(
-                  (w) =>
-                    w.data.wallet_address === selectedWallet.data.wallet_address
-                ) && (
-                  <CardWallet
-                    key={selectedWallet.data.wallet_address}
-                    wallet={selectedWallet}
-                    isPinned={false}
-                    togglePin={() => togglePinnedWallet(selectedWallet)}
-                  />
-                )}
-              {wallets
-                .filter(
-                  (wallet) =>
-                    wallet.data.wallet_address !==
-                      selectedWallet?.data.wallet_address &&
-                    !pinnedWallets.some(
-                      (pinned) =>
-                        pinned.data.wallet_address ===
-                        wallet.data.wallet_address
+              {filteredWallets.length > 0 ? (
+                <>
+                  {selectedWallet &&
+                    selectedInSearch &&
+                    !filteredPinnedWallets.some(
+                      (w) =>
+                        w.data.wallet_address ===
+                        selectedWallet.data.wallet_address
+                    ) && (
+                      <CardWallet
+                        key={selectedWallet.data.wallet_address}
+                        wallet={selectedWallet}
+                        isPinned={false}
+                        togglePin={() => togglePinnedWallet(selectedWallet)}
+                      />
+                    )}
+                  {filteredWallets
+                    .filter(
+                      (wallet) =>
+                        wallet.data.wallet_address !==
+                          selectedWallet?.data.wallet_address &&
+                        !filteredPinnedWallets.some(
+                          (pinned) =>
+                            pinned.data.wallet_address ===
+                            wallet.data.wallet_address
+                        )
                     )
-                )
-                .map((wallet) => (
-                  <CardWallet
-                    key={wallet.data.wallet_address}
-                    wallet={wallet}
-                    isPinned={false}
-                    togglePin={() => togglePinnedWallet(wallet)}
-                  />
-                ))}
+                    .map((wallet) => (
+                      <CardWallet
+                        key={wallet.data.wallet_address}
+                        wallet={wallet}
+                        isPinned={false}
+                        togglePin={() => togglePinnedWallet(wallet)}
+                      />
+                    ))}
+                </>
+              ) : (
+                <p className="font-bold text-center">Not found</p>
+              )}
             </div>
 
             {/* Connect Wallet */}
-            {wallets.length === 0 && (
+            {filteredWallets.length === 0 && (
               <div className="text-center py-6 space-y-4">
                 <p>
                   Connect a wallet to view your Safe Accounts or to create a new

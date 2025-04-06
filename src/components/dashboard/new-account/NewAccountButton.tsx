@@ -34,6 +34,7 @@ import {
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import {
   getRandomAddressFromServer,
+  removeVisibleModifier,
   useCreateMultisigWallet,
   useGetWalletCreated,
   WalletRecord,
@@ -41,7 +42,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import useAccount, { getRandomGradient } from "@/stores/useAccount";
-import { convertKey, formatAleoAddress } from "@/utils";
+import { formatAleoAddress } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 
 interface Signer {
@@ -49,14 +50,14 @@ interface Signer {
   address: string;
 }
 
-const NewAccountButton = () => {
+const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
   const { publicKey } = useWallet();
   const DEFAULT_SIGNER = {
     name: "Me",
     address: publicKey as string,
   };
   const [currentStep, setCurrentStep] = useState(1);
-  const { selectedWallet, setWallets, setSelectedWallet } = useAccount();
+  const { setWallets, setSelectedWallet } = useAccount();
   const [signerList, setSignerList] = useState<Signer[]>([]);
   const [newSigner, setNewSigner] = useState<Signer>({
     name: "",
@@ -66,6 +67,7 @@ const NewAccountButton = () => {
   const { createMultisigWallet, error, isProcessing, txId, reset } =
     useCreateMultisigWallet();
   const { getWalletCreated } = useGetWalletCreated();
+  const [walletName, setWalletName] = useState("");
 
   const handleCreateMultiWallet = async () => {
     try {
@@ -78,8 +80,10 @@ const NewAccountButton = () => {
       //     threshold: Number(threshold),
       //   });
       // }, 1000);
+      if (!walletName) return;
       const network = WalletAdapterNetwork.TestnetBeta;
       const address = await getRandomAddressFromServer(network);
+      localStorage.setItem("name", JSON.stringify({ [`${removeVisibleModifier(address)}:${publicKey}`]: walletName }));
       const txHash = await createMultisigWallet({
         owners: [...signerList.map((signer) => signer.address)],
         threshold: Number(threshold),
@@ -90,6 +94,8 @@ const NewAccountButton = () => {
         toast("Wallet created successfully");
         setNewSigner({ name: "", address: "" });
         setSignerList([DEFAULT_SIGNER]);
+        localStorage.removeItem("name");
+        setWalletName("");
         const refreshWalletCreated: WalletRecord[] | void =
           await getWalletCreated();
         if (refreshWalletCreated) {
@@ -100,6 +106,7 @@ const NewAccountButton = () => {
           if (newSelected) {
             setSelectedWallet(newSelected);
           }
+          resetGetWallet();
         }
         setCurrentStep(1);
       }
@@ -196,7 +203,11 @@ const NewAccountButton = () => {
                       <div className="space-y-5">
                         <div className="space-y-1.5">
                           <Label>Wallet Name</Label>
-                          <Input placeholder="my wallet name" />
+                          <Input
+                            placeholder="my wallet name"
+                            value={walletName}
+                            onChange={(e) => setWalletName(e.target.value)}
+                          />
                         </div>
 
                         <div className="flex space-x-1.5 items-center">
@@ -474,6 +485,12 @@ const NewAccountButton = () => {
                     <Button
                       variant={"outline"}
                       onClick={() => {
+                        if (currentStep === 1) {
+                          if (walletName.trim() === "") {
+                            toast("Please enter a wallet name");
+                            return;
+                          }
+                        }
                         if (currentStep < 3) {
                           setCurrentStep(currentStep + 1);
                         }

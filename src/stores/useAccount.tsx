@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { WalletRecord } from "zerosecurehq-sdk";
+import { removeVisibleModifier, WalletRecord } from "zerosecurehq-sdk";
 
 export interface WalletRecordData extends WalletRecord {
   avatar?: string;
@@ -18,11 +18,30 @@ interface AccountState {
 }
 
 const gradients = [
-  "bg-gradient-to-r from-blue-500 to-green-500",
-  "bg-gradient-to-r from-purple-500 to-pink-500",
-  "bg-gradient-to-r from-red-500 to-yellow-500",
-  "bg-gradient-to-r from-indigo-500 to-purple-500",
-  "bg-gradient-to-r from-teal-500 to-cyan-500",
+  "bg-gradient-to-r from-pink-500 to-yellow-500",
+  "bg-gradient-to-r from-purple-500 to-indigo-500",
+  "bg-gradient-to-r from-blue-500 to-teal-400",
+  "bg-gradient-to-r from-green-400 to-blue-500",
+  "bg-gradient-to-r from-red-400 to-pink-400",
+  "bg-gradient-to-r from-yellow-400 to-red-500",
+  "bg-gradient-to-r from-cyan-400 to-blue-600",
+  "bg-gradient-to-r from-emerald-400 to-lime-500",
+  "bg-gradient-to-r from-indigo-500 to-purple-600",
+  "bg-gradient-to-r from-rose-400 to-fuchsia-500",
+  "bg-gradient-to-r from-orange-400 to-amber-500",
+  "bg-gradient-to-r from-teal-400 to-cyan-500",
+  "bg-gradient-to-r from-blue-400 to-violet-500",
+  "bg-gradient-to-r from-lime-400 to-green-500",
+  "bg-gradient-to-r from-fuchsia-400 to-rose-500",
+  "bg-gradient-to-r from-amber-400 to-yellow-500",
+  "bg-gradient-to-r from-sky-400 to-blue-500",
+  "bg-gradient-to-r from-purple-400 to-pink-500",
+  "bg-gradient-to-r from-green-500 to-teal-500",
+  "bg-gradient-to-r from-pink-400 to-red-500",
+  "bg-gradient-to-r from-indigo-400 to-blue-500",
+  "bg-gradient-to-r from-teal-300 to-green-400",
+  "bg-gradient-to-r from-yellow-300 to-orange-400",
+  "bg-gradient-to-r from-blue-300 to-indigo-400",
 ];
 
 export const getRandomGradient = () =>
@@ -40,11 +59,26 @@ const setLocalStorage = (key: string, value: any) => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
+const WALLET_AVATAR_KEY = "wallet_avatars";
+
+const getWalletAvatars = (): Record<string, string> => {
+  return getLocalStorage<Record<string, string>>(WALLET_AVATAR_KEY, {});
+};
+
+const getOrCreateWalletAvatar = (walletAddress: string): string => {
+  const convertedAddress = removeVisibleModifier(walletAddress);
+  const avatars = getWalletAvatars();
+  if (!avatars[convertedAddress]) {
+    avatars[convertedAddress] = getRandomGradient();
+    setLocalStorage(WALLET_AVATAR_KEY, avatars);
+  }
+  return avatars[convertedAddress];
+};
+
 const getStoredAccount = (publicKey: string) => {
   const accounts = getLocalStorage<Record<string, any>>("accounts", {});
   return (
     accounts[publicKey] || {
-      wallets: [],
       pinnedWallets: [],
       selectedWallet: null,
     }
@@ -58,20 +92,6 @@ const updateStoredAccount = (
   const accounts = getLocalStorage<Record<string, any>>("accounts", {});
   accounts[publicKey] = { ...accounts[publicKey], ...data };
   setLocalStorage("accounts", accounts);
-};
-
-const enhanceWallets = (wallets: WalletRecordData[], publicKey: string) => {
-  const walletsOld =
-    getLocalStorage<Record<string, any>>("accounts", {})[publicKey]?.wallets ||
-    [];
-  const newWallets = wallets.map((wallet) => {
-    const oldWallet = walletsOld.find(
-      (w: WalletRecordData) => w.id === wallet.id
-    );
-    if (oldWallet) return oldWallet;
-    return { ...wallet, avatar: wallet.avatar || getRandomGradient() };
-  });
-  return newWallets;
 };
 
 const useAccount = create<AccountState>((set) => ({
@@ -88,8 +108,12 @@ const useAccount = create<AccountState>((set) => ({
   setWallets: (wallets) => {
     set((state) => {
       if (!state.publicKey) return {};
-      const enhanced = enhanceWallets(wallets, state.publicKey);
-      updateStoredAccount(state.publicKey, { wallets: enhanced });
+      const enhanced = wallets.map((wallet) => ({
+        ...wallet,
+        avatar: getOrCreateWalletAvatar(
+          removeVisibleModifier(wallet.data.wallet_address)
+        ),
+      }));
       return { wallets: enhanced };
     });
   },
@@ -97,7 +121,9 @@ const useAccount = create<AccountState>((set) => ({
   setSelectedWallet: (wallet) => {
     set((state) => {
       if (!state.publicKey) return {};
-      if (wallet) wallet.avatar = wallet.avatar || getRandomGradient();
+      if (wallet) {
+        wallet.avatar = getOrCreateWalletAvatar(wallet.data.wallet_address);
+      }
       updateStoredAccount(state.publicKey, { selectedWallet: wallet });
       return { selectedWallet: wallet };
     });
