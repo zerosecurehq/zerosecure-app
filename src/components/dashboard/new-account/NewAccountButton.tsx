@@ -71,7 +71,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
 
   const handleCreateMultiWallet = async () => {
     try {
-      // setTimeout(() => {
+      // setTimeout(async () => {
       //   console.log({
       //     owners: [
       //       publicKey as string,
@@ -79,11 +79,25 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
       //     ],
       //     threshold: Number(threshold),
       //   });
+      //   const network = WalletAdapterNetwork.TestnetBeta;
+      //   const address = await getRandomAddressFromServer(network);
+      //   const mappingNameParse = JSON.parse(
+      //     localStorage.getItem("mappingName") || "{}"
+      //   );
+      //   mappingNameParse[address] = Object.fromEntries(
+      //     signerList.map((signer) => [signer.address, signer.name])
+      //   );
+      //   localStorage.setItem("mappingName", JSON.stringify(mappingNameParse));
       // }, 1000);
       if (!walletName) return;
       const network = WalletAdapterNetwork.TestnetBeta;
       const address = await getRandomAddressFromServer(network);
-      localStorage.setItem("name", JSON.stringify({ [`${removeVisibleModifier(address)}:${publicKey}`]: walletName }));
+      localStorage.setItem(
+        "name",
+        JSON.stringify({
+          [`${removeVisibleModifier(address)}:${publicKey}`]: walletName,
+        })
+      );
       const txHash = await createMultisigWallet({
         owners: [...signerList.map((signer) => signer.address)],
         threshold: Number(threshold),
@@ -94,6 +108,13 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
         toast("Wallet created successfully");
         setNewSigner({ name: "", address: "" });
         setSignerList([DEFAULT_SIGNER]);
+        const mappingNameParse = JSON.parse(
+          localStorage.getItem("mappingName") || "{}"
+        );
+        mappingNameParse[address] = Object.fromEntries(
+          signerList.map((signer) => [signer.address, signer.name])
+        );
+        localStorage.setItem("mappingName", JSON.stringify(mappingNameParse));
         localStorage.removeItem("name");
         setWalletName("");
         const refreshWalletCreated: WalletRecord[] | void =

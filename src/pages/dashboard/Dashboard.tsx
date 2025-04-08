@@ -15,9 +15,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!publicKey) {
-      resetAccount()
-      return
-    };
+      resetAccount();
+      return;
+    }
     if (!selectedWallet) navigate("/connect");
   }, [publicKey]);
 

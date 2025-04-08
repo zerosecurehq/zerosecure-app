@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { removeVisibleModifier } from "zerosecurehq-sdk";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
-const ZERO_ADDRESS =
+export const ZERO_ADDRESS =
   "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc";
 
 const CardWallet = ({

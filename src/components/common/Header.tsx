@@ -1,4 +1,11 @@
-import { ArrowUpDown, Bell, ChevronDown, Home, User } from "lucide-react";
+import {
+  ArrowUpDown,
+  Bell,
+  ChevronDown,
+  Home,
+  KeyRound,
+  User,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import ZeroIcon from "./ZeroIcon";
 import { Button } from "../ui/button";
@@ -13,10 +20,11 @@ const NAVIGATE_PAGES = [
   { name: "Home", icon: Home, href: "/" },
   { name: "Transactions", icon: ArrowUpDown, href: "/transactions" },
   { name: "Account", icon: User, href: "/connect" },
+  { name: " Governance", icon: KeyRound, href: "/governance" },
 ];
 
 const Header = () => {
-  const { selectedWallet } = useAccount();
+  const { selectedWallet, publicKey } = useAccount();
 
   return (
     <header className="bg-white border-b-gray-200 border-b flex items-center justify-between fixed top-0 left-0 w-full h-16 z-20">
@@ -37,7 +45,8 @@ const Header = () => {
             asChild
             variant="ghost"
             className={`mx-1 ${
-              !selectedWallet && item.name !== "Account" && "hidden"
+              ((!selectedWallet && item.name !== "Account") || !publicKey) &&
+              "hidden"
             }`}
           >
             <Link to={item.href} className="flex items-center p-3 rounded-lg">

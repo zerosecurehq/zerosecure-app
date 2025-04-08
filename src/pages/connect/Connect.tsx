@@ -165,14 +165,14 @@ const Connect = () => {
 
               <div>
                 <Skeleton className="w-20 h-5 rounded-full mb-2" />
-                <div className="border border-dashed border-gray-300 p-2 text-gray-500 text-center rounded-lg space-y-2">
+                <div className="border border-dashed border-gray-300 p-2 rounded-lg space-y-2">
                   {[...Array(3)].map((_, i) => (
                     <CardWalletSkeleton key={i} />
                   ))}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 cursor-pointer">
+              <div className="flex items-center gap-2">
               <Skeleton className="w-20 h-5 rounded-full mb-2" />
               </div>
 
@@ -189,7 +189,7 @@ const Connect = () => {
 
             {/* Import Safe */}
             <div className="mt-6 flex flex-col items-center gap-4">
-              <p className="text-gray-600 text-sm font-bold">
+              <p>
               <Skeleton className="w-96 h-5 rounded-full mb-2" />
               </p>
             </div>
