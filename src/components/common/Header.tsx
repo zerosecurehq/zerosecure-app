@@ -2,19 +2,27 @@ import {
   ArrowUpDown,
   Bell,
   ChevronDown,
+  ChevronUp,
   Home,
   KeyRound,
   User,
 } from "lucide-react";
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Link } from "react-router-dom";
 import ZeroIcon from "./ZeroIcon";
-import { Button } from "../ui/button";
 import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 import "@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css";
 import { Badge } from "../ui/badge";
 import useAccount from "@/stores/useAccount";
 import { formatAleoAddress } from "@/utils";
 import { removeVisibleModifier } from "zerosecurehq-sdk";
+import { useState } from "react";
 
 const NAVIGATE_PAGES = [
   { name: "Home", icon: Home, href: "/" },
@@ -24,7 +32,8 @@ const NAVIGATE_PAGES = [
 ];
 
 const Header = () => {
-  const { selectedWallet, publicKey } = useAccount();
+  const { selectedWallet, publicKey, resetWallet } = useAccount();
+  const [open, setOpen] = useState(false);
 
   return (
     <header className="bg-white border-b-gray-200 border-b flex items-center justify-between fixed top-0 left-0 w-full h-16 z-20">
@@ -63,10 +72,10 @@ const Header = () => {
           <Bell />
         </div>
         {selectedWallet && (
-          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200">
+          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200 relative">
             <div
               className={`w-12 h-12 relative ${selectedWallet?.avatar} rounded-xl`}
-            ></div>
+            />
             <div className="text-sm flex-1">
               <div className="font-semibold text-center">
                 <Badge>Wallet 1</Badge>
@@ -80,7 +89,36 @@ const Header = () => {
                 </span>
               </div>
             </div>
-            <ChevronDown />
+            {open ? (
+              <>
+                <ChevronDown
+                  size={20}
+                  onClick={() => {
+                    setOpen(false);
+                  }}
+                />
+              </>
+            ) : (
+              <ChevronUp
+                size={20}
+                onClick={() => {
+                  setOpen(true);
+                }}
+              />
+            )}
+            {open && (
+              <Card className="absolute top-full right-0 mt-2 w-full">
+                <CardHeader>
+                  <CardTitle>Wallet</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button  variant={"outline"} className="w-full" onClick={() => {
+                    setOpen(false);
+                    resetWallet()
+                  }}>Logout</Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 

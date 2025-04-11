@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { removeVisibleModifier, WalletRecord } from "zerosecurehq-sdk";
+import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 
 export interface WalletRecordData extends WalletRecord {
   avatar?: string;
@@ -15,6 +16,9 @@ interface AccountState {
   togglePinnedWallet: (wallet: WalletRecordData) => void;
   setSelectedWallet: (wallet: WalletRecordData | null) => void;
   resetAccount: () => void;
+  resetWallet: () => void;
+  tokens: TokenRecord[];
+  setToken: (tokens: TokenRecord[]) => void;
 }
 
 const gradients = [
@@ -99,6 +103,7 @@ const useAccount = create<AccountState>((set) => ({
   wallets: [],
   pinnedWallets: [],
   selectedWallet: null,
+  tokens: [],
 
   setPublicKey: (key) => {
     const accountData = getStoredAccount(key);
@@ -144,13 +149,23 @@ const useAccount = create<AccountState>((set) => ({
       return { pinnedWallets: updatedPinned };
     });
   },
-
   resetAccount: () =>
     set({
       wallets: [],
       pinnedWallets: [],
       selectedWallet: null,
     }),
+  resetWallet: () => set({ selectedWallet: null }),
+
+  setToken: (newTokens: TokenRecord[]) => {
+    set((state) => {
+      if (!state.publicKey) return state;
+      updateStoredAccount(state.publicKey, {
+        tokens: [...state.tokens, ...newTokens],
+      });
+      return { tokens: [...state.tokens, ...newTokens] };
+    });
+  },
 }));
 
 export default useAccount;

@@ -32,50 +32,127 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { removeVisibleModifier } from "zerosecurehq-sdk";
+import {
+  removeVisibleModifier,
+  useCreateChangeGovernance,
+  useGetWalletCreated,
+} from "zerosecurehq-sdk";
 import { ZERO_ADDRESS } from "../connect/CardWallet";
 import GovernanceRow from "@/components/dashboard/governance/GovernanceRow";
 import { UserPlus2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { isArrayChangedById } from "@/utils";
+import useAccount from "@/stores/useAccount";
 
-const selected = {
-  id: "a1b2c3d4-e5f6-7g8h-9i10-j11k12l13m14",
-  spent: false,
-  recordName: "Wallet",
-  name: "Personal Wallet",
-  owner: "aleo1ownerxyz1234567890abcdefghijklmnopqrstuv",
-  program_id: "zerosecure_v2.aleo",
-  data: {
-    wallet_address: "aleo1xyzabc1234567890abcdefghijklmnopqrstuv.private",
-    owners: [
-      "aleo1ownerxyz1234567890abcdefghijklmnopqrstuv.private",
-      "aleo1userabc9876543210zxcvbnmlkjhgfdsaqwertyuiop.private",
-      "aleo1signerxyz1357924680poiuytrewqlkjhgfdsamnbvcxz.private",
-      "aleo1nodeabc8372619450vbnmasdfghjklpoiuytrewqzxcm.private",
-      "aleo1agentxyz1928374650wertyuiopasdfghjklzxcvbnmq.private",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc.private",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc.private",
-      "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc.private",
-    ],
-    threshold: 1,
-  },
-  avatar: "bg-gradient-to-r from-blue-500 to-green-500",
-};
+// const selected = {
+//   id: "a1b2c3d4-e5f6-7g8h-9i10-j11k12l13m14",
+//   spent: false,
+//   recordName: "Wallet",
+//   name: "Personal Wallet",
+//   owner: "aleo1ownerxyz1234567890abcdefghijklmnopqrstuv",
+//   program_id: "zerosecure_v2.aleo",
+//   data: {
+//     wallet_address: "aleo1xyzabc1234567890abcdefghijklmnopqrstuv.private",
+//     owners: [
+//       "aleo1ownerxyz1234567890abcdefghijklmnopqrstuv.private",
+//       "aleo1userabc9876543210zxcvbnmlkjhgfdsaqwertyuiop.private",
+//       "aleo1signerxyz1357924680poiuytrewqlkjhgfdsamnbvcxz.private",
+//       "aleo1nodeabc8372619450vbnmasdfghjklpoiuytrewqzxcm.private",
+//       "aleo1agentxyz1928374650wertyuiopasdfghjklzxcvbnmq.private",
+//       "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc.private",
+//       "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc.private",
+//       "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc.private",
+//     ],
+//     threshold: 1,
+//   },
+//   avatar: "bg-gradient-to-r from-blue-500 to-green-500",
+// };
 
 const Governance = () => {
-  const [addSignerList, setAddSignerList] = useState<
+  const [newSignerList, setNewSignerList] = useState<
     Array<{ name: string; address: string }>
   >([]);
+  const { createChangeGovernance, error, isProcessing, reset } =
+    useCreateChangeGovernance();
+  const { selectedWallet, setWallets, setSelectedWallet } = useAccount();
   const [newSigner, setNewSigner] = useState({ name: "", address: "" });
+  const [newThreshold, setNewThreshold] = useState("0");
   const [openDialog, setOpenDialog] = useState(false);
+  const { getWalletCreated } = useGetWalletCreated();
 
   const handleDelete = (publicKey: string) => {
-    const filteredOwner = selected.data.owners.filter(
-      (item) => removeVisibleModifier(item) !== removeVisibleModifier(publicKey)
+    const deletedList = newSignerList.filter(
+      (item) =>
+        removeVisibleModifier(item.address) !== removeVisibleModifier(publicKey)
     );
-    console.log("Deleted", filteredOwner);
+    setNewSignerList(deletedList);
   };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedWallet) return;
+    const oldOwners = selectedWallet.data.owners
+      .map((owner) => {
+        if (removeVisibleModifier(owner) !== ZERO_ADDRESS) {
+          return { id: owner };
+        }
+      })
+      .filter((item) => item !== undefined);
+    const newOwners = newSignerList.map((item) => ({ id: item.address }));
+    const isChanged = isArrayChangedById(oldOwners, newOwners);
+    if (!isChanged) return toast.error("No changes detected");
+    const txIdHash = await createChangeGovernance(
+      selectedWallet,
+      [...newSignerList.map((item) => item.address)],
+      Number(newThreshold)
+    );
+    if (txIdHash) {
+      toast("Governance updated successfully");
+      reset();
+      const newWallet = await getWalletCreated();
+      if (newWallet) {
+        setWallets(newWallet);
+      }
+      const newSelectedWallet = newWallet?.find(
+        (item) =>
+          item.data.wallet_address === selectedWallet.data.wallet_address
+      );
+      if (newSelectedWallet) {
+        setSelectedWallet(newSelectedWallet);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (error) {
+      toast(error.message);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (selectedWallet) {
+      setNewThreshold(
+        parseInt(selectedWallet?.data.threshold || "0").toString()
+      );
+      const signerNameListParser = JSON.parse(
+        localStorage.getItem("mappingName") || "{}"
+      )[removeVisibleModifier(selectedWallet.data.wallet_address)];
+      const signerOld = selectedWallet.data.owners
+        .map((owner) => {
+          if (removeVisibleModifier(owner) !== ZERO_ADDRESS) {
+            return {
+              name: signerNameListParser?.[removeVisibleModifier(owner)],
+              address: owner,
+            };
+          }
+        })
+        .filter((item) => item !== undefined);
+      setNewSignerList(signerOld);
+    }
+  }, [selectedWallet]);
+
+  if (!selectedWallet) return null;
 
   return (
     <section className="bg-gray-100 w-full px-28 py-14">
@@ -86,9 +163,8 @@ const Governance = () => {
           </div>
           <div className="flex items-center gap-3">
             <Select
-              defaultValue={parseInt(
-                selected.data.threshold.toString()
-              ).toString()}
+              value={newThreshold}
+              onValueChange={(value) => setNewThreshold(value.toString())}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Set your threshold" />
@@ -100,13 +176,7 @@ const Governance = () => {
                     <SelectItem
                       key={i}
                       value={(i + 1).toString()}
-                      disabled={
-                        i + 1 >
-                        selected.data.owners.filter(
-                          (owner) =>
-                            removeVisibleModifier(owner) !== ZERO_ADDRESS
-                        ).length + addSignerList.length
-                      }
+                      disabled={i + 1 > newSignerList.length || isProcessing}
                     >
                       {i + 1}
                     </SelectItem>
@@ -122,7 +192,10 @@ const Governance = () => {
               open={openDialog}
             >
               <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  disabled={isProcessing || newSignerList.length >= 8}
+                >
                   <UserPlus2 />
                 </Button>
               </DialogTrigger>
@@ -160,15 +233,24 @@ const Governance = () => {
                   <Button
                     type="submit"
                     onClick={() => {
-                      if (newSigner.name.trim() === "" || newSigner.address.trim() === "") {
-                        toast("Cannot empty")
+                      if (
+                        newSigner.name.trim() === "" ||
+                        newSigner.address.trim() === ""
+                      ) {
+                        toast("Cannot empty");
                         return;
                       }
-                      if (selected.data.owners.find(owner => removeVisibleModifier(owner) === newSigner.address)) {
-                        toast("Cannot be the same")
+                      if (
+                        newSignerList.some(
+                          (item) =>
+                            removeVisibleModifier(item.address) ===
+                            newSigner.address
+                        )
+                      ) {
+                        toast("Cannot be the same");
                         return;
                       }
-                      setAddSignerList((preve) => [...preve, newSigner]);
+                      setNewSignerList((prev) => [...prev, newSigner]);
                       setOpenDialog(false);
                     }}
                   >
@@ -189,23 +271,12 @@ const Governance = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {selected.data.owners
-                .filter(
-                  (owner) => removeVisibleModifier(owner) !== ZERO_ADDRESS
-                )
-                .map((owner, index) => (
+              {newSignerList.length > 0 &&
+                newSignerList.map((item, index) => (
                   <GovernanceRow
                     key={index}
-                    owner={removeVisibleModifier(owner)}
-                    handleDelete={handleDelete}
-                  />
-                ))}
-              {addSignerList.length > 0 &&
-                addSignerList.map((item, index) => (
-                  <GovernanceRow
-                    key={index}
-                    owner={removeVisibleModifier(item.address)}
-                    name={item.name}
+                    data={item}
+                    isProcessing={isProcessing}
                     handleDelete={handleDelete}
                   />
                 ))}
@@ -214,7 +285,7 @@ const Governance = () => {
         </CardContent>
         <CardFooter className="flex justify-end items-center gap-3">
           <Button variant="outline">Cancel</Button>
-          <Button>Save</Button>
+          <Button onClick={handleSave}>Save</Button>
         </CardFooter>
       </Card>
     </section>

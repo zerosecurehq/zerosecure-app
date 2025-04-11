@@ -12,21 +12,37 @@ import {
 } from "@/components/ui/dialog";
 
 import { useEffect, useState } from "react";
-import { removeVisibleModifier, useCreateTransaction } from "zerosecurehq-sdk";
+import {
+  CREDITS_TOKEN_ID,
+  removeVisibleModifier,
+  useCreateTransaction,
+} from "zerosecurehq-sdk";
 import { toast } from "sonner";
 import useAccount from "@/stores/useAccount";
 import { Loader2 } from "lucide-react";
 import { creditsToMicroCredits, formatAleoAddress } from "@/utils";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { fakeTokens } from "../transactions/Token";
 
 const Page1 = ({
   setAmount,
   setRecipient,
+  setTokenSelected,
 }: {
   setAmount: (amount: number) => void;
   setRecipient: (address: string) => void;
+  setTokenSelected: (token: string) => void;
 }) => {
   return (
-    <div className="p-5 space-y-6 border-t border-b border-gray-200">
+    <div className="p-5 space-y-3 border-t border-b border-gray-200">
       <Warning
         msg={
           "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
@@ -38,6 +54,25 @@ const Page1 = ({
           placeholder="aleo1qz8...da2s"
           onChange={(e) => setRecipient(e.target.value)}
         />
+      </div>
+      <div>
+        <Label>Select token</Label>
+        <Select onValueChange={(value) => setTokenSelected(value)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a...." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Select a token</SelectLabel>
+              <SelectItem value={CREDITS_TOKEN_ID}>Remove token</SelectItem>
+              {fakeTokens.map((token) => (
+                <SelectItem value={token.data.token_id} key={token.id}>
+                  {token.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex- space-y-1.5">
         <Label>Amount</Label>
@@ -177,6 +212,8 @@ const NewTransactionButton = ({
   const [amount, setAmount] = useState(0);
   const { createTransaction, error, isProcessing, reset, txId } =
     useCreateTransaction();
+  const [tokenSelected, setTokenSelected] = useState(CREDITS_TOKEN_ID);
+  const [openTransfer, setOpenTransfer] = useState(false);
 
   const handleCreateTransaction = async () => {
     if (!selectedWallet) return;
@@ -184,17 +221,21 @@ const NewTransactionButton = ({
     // setTimeout(() => {
     //   console.log(walletWithoutAvatar, recipient, credisToMicrocredis(amount));
     // }, 1000);
+
     const txHash = await createTransaction(
       walletWithoutAvatar,
+      tokenSelected,
       recipient,
       creditsToMicroCredits(amount)
     );
+
     if (txHash) {
       reset();
       setAmount(0);
       toast("Create transaction successfully");
       setRecipient("");
-      setStep(1);
+      setTokenSelected("");
+      setOpenTransfer(false);
     }
   };
 
@@ -210,16 +251,24 @@ const NewTransactionButton = ({
 
   return (
     <Dialog
-      onOpenChange={() => {
+      onOpenChange={(value) => {
         setStep(1);
         setFeeType("public");
         setRecipient("");
         setAmount(0);
         reset();
+        setTokenSelected(CREDITS_TOKEN_ID);
+        setOpenTransfer(value);
       }}
+      open={openTransfer}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" className={className} disabled={isProcessing}>
+        <Button
+          variant="outline"
+          className={className}
+          disabled={isProcessing}
+          onClick={() => setOpenTransfer(true)}
+        >
           {isProcessing ? <Loader2 className="animate-spin" /> : text}
         </Button>
       </DialogTrigger>
@@ -236,7 +285,11 @@ const NewTransactionButton = ({
               {
                 {
                   1: (
-                    <Page1 setRecipient={setRecipient} setAmount={setAmount} />
+                    <Page1
+                      setRecipient={setRecipient}
+                      setAmount={setAmount}
+                      setTokenSelected={setTokenSelected}
+                    />
                   ),
                   2: (
                     <Page2

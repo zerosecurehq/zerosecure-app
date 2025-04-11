@@ -32,3 +32,16 @@ export const getBalanceMultiWallet = async (
   const result = await getMultisigWalletBalance(network, multisigWalletAddress);
   return result;
 };
+
+export const isArrayChangedById = (oldArray: { id: string }[], newArray: { id: string }[]) => {
+  const oldIds = oldArray.map(item => item.id).sort();
+  const newIds = newArray.map(item => item.id).sort();
+
+  if (oldIds.length !== newIds.length) return true;
+
+  for (let i = 0; i < oldIds.length; i++) {
+    if (oldIds[i] !== newIds[i]) return true;
+  }
+
+  return false;
+};

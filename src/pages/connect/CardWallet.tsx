@@ -40,19 +40,13 @@ const CardWallet = ({
   useEffect(() => {
     if (publicKey) {
       try {
-        const storedData = localStorage.getItem("name");
-        if (storedData) {
-          const parsedData = JSON.parse(storedData);
-          setWalletName(
-            parsedData[
-              `${removeVisibleModifier(
-                wallet.data.wallet_address
-              )}:${publicKey}`
-            ] || ""
-          );
-        } else {
-          setWalletName("");
-        }
+        const nameParser = JSON.parse(localStorage.getItem("name") || "{}");
+        const name =
+          nameParser[
+            removeVisibleModifier(wallet?.data.wallet_address || "")
+          ][publicKey];
+        if (name) setWalletName(name);
+        else setWalletName("");
       } catch (error) {
         console.error("Error parsing JSON:", error);
         setWalletName("");
@@ -62,17 +56,13 @@ const CardWallet = ({
 
   const handleSaveName = () => {
     if (publicKey && newWalletName) {
-      const storedData = localStorage.getItem("name");
-      let parsedData: Record<string, string> = {};
-      if (storedData) {
-        parsedData = JSON.parse(storedData);
-      }
-
-      parsedData[
-        `${removeVisibleModifier(wallet.data.wallet_address)}:${publicKey}`
-      ] = newWalletName;
-      localStorage.setItem("name", JSON.stringify(parsedData));
-
+      const nameParser = JSON.parse(localStorage.getItem("name") || "{}");
+      nameParser[
+        removeVisibleModifier(selectedWallet?.data.wallet_address || "")
+      ] = {
+        [publicKey]: newWalletName,
+      };
+      localStorage.setItem("name", JSON.stringify(nameParser));
       setWalletName(newWalletName);
       setIsDialogOpen(false);
     }

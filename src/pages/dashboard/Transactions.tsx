@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import GovernanceList from "@/components/dashboard/transactions/GovernanceList";
+import Token from "@/components/dashboard/transactions/Token";
 
 const Transactions = () => {
   return (
@@ -22,11 +23,12 @@ const Transactions = () => {
         <h2 className="font-bold text-4xl mb-3">Transactions</h2>
         <Tabs defaultValue="signing">
           <div className="flex items-center justify-between gap-2 mb-8">
-            <TabsList className="grid w-fit grid-cols-4 space-x-3 bg-gray-200">
+            <TabsList className="grid w-fit grid-cols-5 space-x-3 bg-gray-200">
               <TabsTrigger value="signing">Signing</TabsTrigger>
               <TabsTrigger value="excute">Excute</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
               <TabsTrigger value="governance">Governance</TabsTrigger>
+              <TabsTrigger value="token">Token</TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-4">
               <Switch id="hideSuspicious" />
@@ -59,6 +61,11 @@ const Transactions = () => {
               <CardContent className="space-y-2">
                 <GovernanceList />
               </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="token">
+            <Card>
+              <Token />
             </Card>
           </TabsContent>
         </Tabs>

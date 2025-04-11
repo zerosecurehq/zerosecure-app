@@ -90,14 +90,9 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
       //   localStorage.setItem("mappingName", JSON.stringify(mappingNameParse));
       // }, 1000);
       if (!walletName) return;
+      if (!publicKey) return;
       const network = WalletAdapterNetwork.TestnetBeta;
       const address = await getRandomAddressFromServer(network);
-      localStorage.setItem(
-        "name",
-        JSON.stringify({
-          [`${removeVisibleModifier(address)}:${publicKey}`]: walletName,
-        })
-      );
       const txHash = await createMultisigWallet({
         owners: [...signerList.map((signer) => signer.address)],
         threshold: Number(threshold),
@@ -108,6 +103,11 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
         toast("Wallet created successfully");
         setNewSigner({ name: "", address: "" });
         setSignerList([DEFAULT_SIGNER]);
+        const nameParser = JSON.parse(localStorage.getItem("name") || "{}");
+        nameParser[removeVisibleModifier(address)] = {
+          [publicKey]: walletName,
+        };
+        localStorage.setItem("name", JSON.stringify(nameParser));
         const mappingNameParse = JSON.parse(
           localStorage.getItem("mappingName") || "{}"
         );
@@ -115,7 +115,6 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
           signerList.map((signer) => [signer.address, signer.name])
         );
         localStorage.setItem("mappingName", JSON.stringify(mappingNameParse));
-        localStorage.removeItem("name");
         setWalletName("");
         const refreshWalletCreated: WalletRecord[] | void =
           await getWalletCreated();
@@ -152,6 +151,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
         setCurrentStep(1);
         reset();
         setSignerList([DEFAULT_SIGNER]);
+        setWalletName("");
         setNewSigner({ name: "", address: "" });
         setThreshold("1");
       }}
@@ -187,7 +187,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                       : currentStep === 3
                       ? "w-3/4"
                       : "w-full"
-                  } h-2 bg-blue-400 transition-all duration-1000`}
+                  } h-2 bg-gray-900 transition-all duration-1000`}
                 />
                 {currentStep < 4 && (
                   <div className="px-3 py-6 border-b border-gray-300">

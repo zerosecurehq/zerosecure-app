@@ -64,7 +64,10 @@ const Signing = () => {
   const getSigning = async () => {
     // @TODO sometimes wallet takes time to update ConfirmTicket to ExecuteTicket, shouldnt render signing transaction that is signed
     // how: when user successfully signed transaction, we should mark it as signed in the local storage
-    setSigning(await getConfirmTransferTicket());
+    const confirmTickets = await getConfirmTransferTicket();
+    if (confirmTickets !== void 0) {
+      setSigning(confirmTickets);
+    }
   };
 
   useEffect(() => {
@@ -80,14 +83,13 @@ const Signing = () => {
           Your signing transactions will be listed here.
         </TableCaption>
         <TableBody>
-          {isProcessing ? (
+          {isProcessing && (
             <p className="text-center mt-3">
               Please wait while we are fetching your signing transactions ...
             </p>
-          ) : (
-            signing.length === 0 && (
-              <p className="text-center mt-3">No signing transactions</p>
-            )
+          )}
+          {!isProcessing && signing.length === 0 && (
+            <p className="text-center mt-3">No signing transactions</p>
           )}
           {signing.length > 0 &&
             signing.map((item, index) => (

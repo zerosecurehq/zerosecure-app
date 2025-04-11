@@ -10,8 +10,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 import useAccount, { WalletRecordData } from "@/stores/useAccount";
 import {
@@ -20,13 +29,25 @@ import {
   microCreditsToCredits,
 } from "@/utils";
 import {
+  CREDITS_TOKEN_ID,
   removeVisibleModifier,
   useCreateDeposit,
   useGetCreditsRecord,
 } from "zerosecurehq-sdk";
 import { Loader2 } from "lucide-react";
 
-const Page1 = ({ setAmount }: { setAmount: (amount: number) => void }) => {
+const Page1 = ({
+  setAmount,
+  typeRecord,
+  setTypeRecord,
+  setTokenSelected,
+}: {
+  setAmount: (amount: number) => void;
+  typeRecord: string;
+  setTypeRecord: Dispatch<SetStateAction<"" | "credits" | "token">>;
+  setTokenSelected: (token: string) => void;
+}) => {
+  const { tokens } = useAccount();
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
       <Warning
@@ -34,14 +55,59 @@ const Page1 = ({ setAmount }: { setAmount: (amount: number) => void }) => {
           "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
         }
       />
-      <div className="flex- space-y-1.5">
-        <Label>Amount</Label>
-        <Input
-          type="number"
-          placeholder="0"
-          onChange={(e) => setAmount(Number(e.target.value))}
-          min={0}
-        />
+      <div className="flex- space-y-2">
+        <div>
+          <Label>Type of deposit</Label>
+          <Select
+            onValueChange={(value) => {
+              if (value === "" || value === "credits" || value === "token") {
+                setTypeRecord(value);
+              }
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a...." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Select a...</SelectLabel>
+                <SelectItem value="credits">Credits</SelectItem>
+                <SelectItem value="token">Token</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          {typeRecord === "token" && (
+            <>
+              <Label>Select token</Label>
+              <Select onValueChange={(value) => setTokenSelected(value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a...." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Select a token</SelectLabel>
+                    {tokens.map((token) => (
+                      <SelectItem value={token.data.token_id} key={token.id}>
+                        {token.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </>
+          )}
+        </div>
+        <div>
+          <Label>Amount</Label>
+          <Input
+            type="number"
+            placeholder="0"
+            onChange={(e) => setAmount(Number(e.target.value))}
+            min={0}
+          />
+        </div>
       </div>
     </div>
   );
@@ -194,8 +260,11 @@ const DepositButton = ({
   const [amount, setAmount] = useState(0);
   const { createDeposit, error, isProcessing, reset, txId } =
     useCreateDeposit();
-  const { selectedWallet } = useAccount();
+  const { selectedWallet, tokens } = useAccount();
   const { getCreditsRecord } = useGetCreditsRecord();
+  const [typeRecord, setTypeRecord] = useState<"" | "credits" | "token">("");
+  const [tokenSelected, setTokenSelected] = useState("");
+  const [openDeposit, setOpenDeposit] = useState(false);
 
   const handleDeposit = async () => {
     if (amount <= 0) {
@@ -210,7 +279,9 @@ const DepositButton = ({
       //     credisToMicrocredis(amount)
       //   );
       // }, 1000);
+
       const txHash = await createDeposit(
+        typeRecord === "token" ? tokenSelected : CREDITS_TOKEN_ID,
         removeVisibleModifier(selectedWallet.data.wallet_address),
         creditsToMicroCredits(amount)
       );
@@ -218,33 +289,49 @@ const DepositButton = ({
         reset();
         toast("Desposit successful");
         setAmount(0);
+        setTokenSelected("");
+        setTypeRecord("");
+        setOpenDeposit(false);
       }
     } else if (depositType === "private" && selectedWallet) {
-      const record = await getCreditsRecord();
-      if (!record) return;
-      const creditsRecord = record.find(
-        (item) =>
-          microCreditsToCredits(parseInt(item.data.microcredits)) >= amount
-      );
-      if (!creditsRecord) {
-        toast.error("No enough credits");
-        return;
+      let creditsRecord;
+      let tokenRecord;
+      if (typeRecord === "credits") {
+        const record = await getCreditsRecord();
+        if (!record) return;
+        creditsRecord = record.find(
+          (item) =>
+            microCreditsToCredits(parseInt(item.data.microcredits)) >= amount
+        );
+        if (!creditsRecord) {
+          toast.error("No enough credits");
+          return;
+        }
       }
-      // setTimeout(() => {
-      //   console.log(
-      //     selectedWallet.data.wallet_address,
-      //     credisToMicrocredis(amount),
-      //     creditsRecord
-      //   );
-      // }, 1000);
+      if (typeRecord === "token") {
+        tokenRecord = tokens.find(
+          (item) =>
+            item.data.token_id === tokenSelected &&
+            microCreditsToCredits(parseInt(item.data.amount)) >= amount
+        );
+        if (!tokenRecord) {
+          toast("Token not found");
+          return;
+        }
+      }
       const txHash = await createDeposit(
+        typeRecord === "credits" ? CREDITS_TOKEN_ID : tokenSelected,
         selectedWallet.data.wallet_address,
         creditsToMicroCredits(amount),
-        creditsRecord
+        typeRecord === "credits" ? creditsRecord : tokenRecord
       );
       if (txHash) {
         reset();
+        toast("Desposit successful");
         setAmount(0);
+        setTokenSelected("");
+        setTypeRecord("");
+        setOpenDeposit(false);
       }
     }
   };
@@ -261,16 +348,19 @@ const DepositButton = ({
 
   return (
     <Dialog
-      onOpenChange={() => {
+      onOpenChange={(value) => {
+        setOpenDeposit(value);
         setStep(1);
         setAmount(0);
         setDepositType("public");
         setFeeType("public");
+        setTokenSelected("");
         reset();
       }}
+      open={openDeposit}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" className={className} disabled={isProcessing}>
+        <Button variant="outline" className={className} disabled={isProcessing} onClick={() => setOpenDeposit(true)}>
           {isProcessing ? <Loader2 className="animate-spin" /> : text}
         </Button>
       </DialogTrigger>
@@ -286,7 +376,14 @@ const DepositButton = ({
             <div className="col-span-2 bg-white rounded-md relative">
               {
                 {
-                  1: <Page1 setAmount={setAmount} />,
+                  1: (
+                    <Page1
+                      setAmount={setAmount}
+                      typeRecord={typeRecord}
+                      setTypeRecord={setTypeRecord}
+                      setTokenSelected={setTokenSelected}
+                    />
+                  ),
                   2: (
                     <Page2
                       depositType={depositType}
@@ -308,17 +405,22 @@ const DepositButton = ({
                       onClick={() => {
                         if (step === 2) {
                           handleDeposit();
-                        }
-                        if (step === 1 && amount === 0) {
-                          toast("Please enter an amount");
                           return;
-                        } else if (step === 1 && amount) {
-                          if (Number(amount) < 0) {
-                            toast("Amount must be greater than 0");
+                        }
+                        if (step === 1) {
+                          if (typeRecord === "" && amount <= 0) {
+                            toast("Please enter an amount greater than 0");
                             return;
                           }
-                          setStep(2);
+                          if (
+                            (typeRecord === "token" && tokenSelected === "") ||
+                            amount <= 0
+                          ) {
+                            toast("Please select a token and enter an amount");
+                            return;
+                          }
                         }
+                        setStep(step + 1);
                       }}
                       variant={"outline"}
                       disabled={isProcessing}
