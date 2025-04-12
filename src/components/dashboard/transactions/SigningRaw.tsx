@@ -25,7 +25,6 @@ const SigningRaw = ({ data, getSigning }: SigningRawProps) => {
     error,
     isProcessing,
     reset: resetConfirm,
-    txId,
   } = useApplyConfirmTransferTicket();
   const [confirmed, setConfirmed] = useState(0);
   const { selectedWallet } = useAccount();

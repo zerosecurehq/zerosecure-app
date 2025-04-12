@@ -4,7 +4,7 @@ import useAccount, { WalletRecordData } from "@/stores/useAccount";
 import { formatAleoAddress, getBalanceMultiWallet } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Pin, Trash2, MoreHorizontal } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { removeVisibleModifier } from "zerosecurehq-sdk";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
@@ -20,7 +20,8 @@ const CardWallet = ({
   isPinned: boolean;
   togglePin: () => void;
 }) => {
-  const { setSelectedWallet, selectedWallet, publicKey } = useAccount();
+  const { setSelectedWallet, selectedWallet, publicKey, wallets } =
+    useAccount();
   const [balanceMultiWallet, setBalanceMultiWallet] = useState(0);
   const [walletName, setWalletName] = useState("");
   const [newWalletName, setNewWalletName] = useState("");
@@ -42,9 +43,9 @@ const CardWallet = ({
       try {
         const nameParser = JSON.parse(localStorage.getItem("name") || "{}");
         const name =
-          nameParser[
-            removeVisibleModifier(wallet?.data.wallet_address || "")
-          ][publicKey];
+          nameParser[removeVisibleModifier(wallet?.data.wallet_address || "")][
+            publicKey
+          ];
         if (name) setWalletName(name);
         else setWalletName("");
       } catch (error) {
@@ -52,7 +53,7 @@ const CardWallet = ({
         setWalletName("");
       }
     }
-  }, [publicKey]);
+  }, [publicKey, wallets]);
 
   const handleSaveName = () => {
     if (publicKey && newWalletName) {

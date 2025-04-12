@@ -6,54 +6,8 @@ import {
   useGetConfirmTransferTicket,
 } from "zerosecurehq-sdk";
 import SigningRaw from "./SigningRaw";
-
-// const fakeTransferTickets: ConfirmTransferTicketRecord[] = [
-//   {
-//     id: "rec_001",
-//     spent: false,
-//     recordName: "confirm_transfer_ticket",
-//     name: "ticket_001",
-//     owner: "aleo1exampleowneraddress1",
-//     program_id: "transfer_program_v1",
-//     status: "confirmed",
-//     data: {
-//       wallet_address: "aleo1walletaddress001",
-//       amount: "100",
-//       transfer_id: "transfer_abc_001",
-//       to: "aleo1recipient001"
-//     }
-//   },
-//   {
-//     id: "rec_002",
-//     spent: true,
-//     recordName: "confirm_transfer_ticket",
-//     name: "ticket_002",
-//     owner: "aleo1exampleowneraddress2",
-//     program_id: "transfer_program_v1",
-//     status: "spent",
-//     data: {
-//       wallet_address: "aleo1walletaddress002",
-//       amount: "250",
-//       transfer_id: "transfer_abc_002",
-//       to: "aleo1recipient002"
-//     }
-//   },
-//   {
-//     id: "rec_003",
-//     spent: false,
-//     recordName: "confirm_transfer_ticket",
-//     name: "ticket_003",
-//     owner: "aleo1exampleowneraddress3",
-//     program_id: "transfer_program_v1",
-//     status: "pending",
-//     data: {
-//       wallet_address: "aleo1walletaddress003",
-//       amount: "50",
-//       transfer_id: "transfer_abc_003",
-//       to: "aleo1recipient003"
-//     }
-//   }
-// ];
+import { toast } from "sonner";
+import RawSkeleton from "./RawSkeleton";
 
 const Signing = () => {
   const { publicKey } = useWallet();
@@ -76,13 +30,18 @@ const Signing = () => {
     }
   }, [publicKey]);
 
+  useEffect(() => {
+    if (error) {
+      toast("Something went wrong");
+      reset();
+    }
+  }, [error]);
+
   return (
     <article>
       <Table>
         <TableCaption className="caption-top text-sm">
           Your signing transactions will be listed here.
-        </TableCaption>
-        <TableBody>
           {isProcessing && (
             <p className="text-center mt-3">
               Please wait while we are fetching your signing transactions ...
@@ -91,6 +50,9 @@ const Signing = () => {
           {!isProcessing && signing.length === 0 && (
             <p className="text-center mt-3">No signing transactions</p>
           )}
+        </TableCaption>
+        <TableBody>
+          {isProcessing && <RawSkeleton />}
           {signing.length > 0 &&
             signing.map((item, index) => (
               <SigningRaw key={index} data={item} getSigning={getSigning} />

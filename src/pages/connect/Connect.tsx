@@ -116,6 +116,8 @@ const Connect = () => {
   useEffect(() => {
     if (!publicKey) {
       resetAccount();
+      setFilteredWallets([]);
+      setFilteredPinnedWallets([]);
       return;
     }
     setPublicKey(publicKey);
@@ -123,7 +125,9 @@ const Connect = () => {
   }, [publicKey]);
 
   useEffect(() => {
-    if (!publicKey) return;
+    if (!publicKey) {
+      return;
+    };
     const storedNames = localStorage.getItem("name");
     const parsedNames = storedNames
       ? (JSON.parse(storedNames) as Record<string, Record<string, string>>)
@@ -144,7 +148,7 @@ const Connect = () => {
     });
     setFilteredPinnedWallets(filteredPinnedWallets);
     setFilteredWallets(filteredWallets);
-  }, [search, wallets, pinnedWallets]);
+  }, [search, wallets, pinnedWallets, publicKey]);
 
   if (isProcessing) {
     return (

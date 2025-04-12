@@ -25,7 +25,6 @@ const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
     error,
     isProcessing,
     reset: resetExcute,
-    txId: txIdExcute,
   } = useApplyExecuteTicket();
   const { selectedWallet } = useAccount();
   const [confirmed, setConfirmed] = useState(0);

@@ -1,8 +1,14 @@
-import { Table, TableBody, TableCaption } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+} from "@/components/ui/table";
 import { ExecuteTicketRecord, useGetExecuteTicket } from "zerosecurehq-sdk";
 import { useEffect, useState } from "react";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import ExcutingRaw from "./ExcutingRaw";
+import { toast } from "sonner";
+import RawSkeleton from "./RawSkeleton";
 
 // const fakeExecuteTickets: ExecuteTicketRecord[] = [
 //   {
@@ -66,6 +72,13 @@ const Signing = () => {
   };
 
   useEffect(() => {
+    if (error) {
+      toast("Something went wrong");
+      reset();
+    }
+  }, [error]);
+
+  useEffect(() => {
     if (publicKey) {
       getExcute();
     }
@@ -76,8 +89,6 @@ const Signing = () => {
       <Table>
         <TableCaption className="caption-top text-sm">
           Your execute transactions will be listed here.
-        </TableCaption>
-        <TableBody>
           {isProcessing ? (
             <p className="text-center mt-3">
               Please wait while we are fetching your execute transactions ...
@@ -87,6 +98,9 @@ const Signing = () => {
               <p className="text-center mt-3">No execute transactions</p>
             )
           )}
+        </TableCaption>
+        <TableBody>
+          {isProcessing && <RawSkeleton />}
           {excute.length > 0 &&
             excute.map((item, index) => (
               <ExcutingRaw key={index} data={item} getExcute={getExcute} />

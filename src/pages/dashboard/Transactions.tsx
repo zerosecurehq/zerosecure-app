@@ -65,7 +65,9 @@ const Transactions = () => {
           </TabsContent>
           <TabsContent value="token">
             <Card>
-              <Token />
+              <CardContent>
+                <Token />
+              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>

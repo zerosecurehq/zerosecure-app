@@ -1,4 +1,8 @@
-import { Table, TableBody, TableCaption } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+} from "@/components/ui/table";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import React, { useEffect, useState } from "react";
 import {
@@ -10,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import useAccount from "@/stores/useAccount";
 import { toast } from "sonner";
+import RawSkeleton from "./RawSkeleton";
 
 export const fakeTokens: TokenRecord[] = [
   {
@@ -57,7 +62,6 @@ export const fakeTokens: TokenRecord[] = [
   },
 ];
 
-
 const Token = () => {
   const { publicKey } = useWallet();
   const { getTokenRecord, error, isProcessing, reset } = useGetTokenRecord();
@@ -87,6 +91,7 @@ const Token = () => {
   useEffect(() => {
     if (error) {
       toast("Failed to fetch token transactions");
+      reset();
     }
   }, [error]);
 
@@ -110,8 +115,6 @@ const Token = () => {
       <Table>
         <TableCaption className="caption-top text-sm">
           Your token transactions will be listed here.
-        </TableCaption>
-        <TableBody>
           {isProcessing && (
             <p className="text-center mt-3">
               Please wait while we are fetching your signing transactions ...
@@ -120,8 +123,13 @@ const Token = () => {
           {!isProcessing && tokens.length === 0 && (
             <p className="text-center mt-3">No token transactions</p>
           )}
+        </TableCaption>
+        <TableBody>
+          {isProcessing && <RawSkeleton />}
           {fakeTokens.length > 0 &&
-            fakeTokens.map((item, index) => <TokenRaw key={index} token={item} />)}
+            fakeTokens.map((item, index) => (
+              <TokenRaw key={index} token={item} />
+            ))}
         </TableBody>
       </Table>
     </article>

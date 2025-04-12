@@ -112,7 +112,7 @@ const useAccount = create<AccountState>((set) => ({
 
   setWallets: (wallets) => {
     set((state) => {
-      if (!state.publicKey) return {};
+      if (!state.publicKey) return state;
       const enhanced = wallets.map((wallet) => ({
         ...wallet,
         avatar: getOrCreateWalletAvatar(
@@ -149,8 +149,10 @@ const useAccount = create<AccountState>((set) => ({
       return { pinnedWallets: updatedPinned };
     });
   },
+
   resetAccount: () =>
     set({
+      publicKey: null,
       wallets: [],
       pinnedWallets: [],
       selectedWallet: null,

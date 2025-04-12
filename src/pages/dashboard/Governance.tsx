@@ -35,7 +35,6 @@ import { Label } from "@/components/ui/label";
 import {
   removeVisibleModifier,
   useCreateChangeGovernance,
-  useGetWalletCreated,
 } from "zerosecurehq-sdk";
 import { ZERO_ADDRESS } from "../connect/CardWallet";
 import GovernanceRow from "@/components/dashboard/governance/GovernanceRow";
@@ -75,11 +74,10 @@ const Governance = () => {
   >([]);
   const { createChangeGovernance, error, isProcessing, reset } =
     useCreateChangeGovernance();
-  const { selectedWallet, setWallets, setSelectedWallet } = useAccount();
+  const { selectedWallet } = useAccount();
   const [newSigner, setNewSigner] = useState({ name: "", address: "" });
   const [newThreshold, setNewThreshold] = useState("0");
   const [openDialog, setOpenDialog] = useState(false);
-  const { getWalletCreated } = useGetWalletCreated();
 
   const handleDelete = (publicKey: string) => {
     const deletedList = newSignerList.filter(
@@ -92,6 +90,17 @@ const Governance = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedWallet) return;
+    const mappingNameParser = JSON.parse(
+      localStorage.getItem("mappingName") || "{}"
+    );
+    const signerObject = newSignerList.reduce((acc, curr) => {
+      acc[curr.address] = curr.name;
+      return acc;
+    }, {} as Record<string, string>);
+    mappingNameParser[
+      removeVisibleModifier(selectedWallet.data.wallet_address)
+    ] = signerObject;
+    localStorage.setItem("mappingName", JSON.stringify(mappingNameParser));
     const oldOwners = selectedWallet.data.owners
       .map((owner) => {
         if (removeVisibleModifier(owner) !== ZERO_ADDRESS) {
@@ -104,23 +113,12 @@ const Governance = () => {
     if (!isChanged) return toast.error("No changes detected");
     const txIdHash = await createChangeGovernance(
       selectedWallet,
-      [...newSignerList.map((item) => item.address)],
+      [...newSignerList.map((item) => removeVisibleModifier(item.address))],
       Number(newThreshold)
     );
     if (txIdHash) {
       toast("Governance updated successfully");
       reset();
-      const newWallet = await getWalletCreated();
-      if (newWallet) {
-        setWallets(newWallet);
-      }
-      const newSelectedWallet = newWallet?.find(
-        (item) =>
-          item.data.wallet_address === selectedWallet.data.wallet_address
-      );
-      if (newSelectedWallet) {
-        setSelectedWallet(newSelectedWallet);
-      }
     }
   };
 

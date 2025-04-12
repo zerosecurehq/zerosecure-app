@@ -440,6 +440,7 @@ const DepositButton = ({
                     <Button
                       onClick={() => setStep(step - 1)}
                       variant={"outline"}
+                      disabled={isProcessing}
                     >
                       Back
                     </Button>

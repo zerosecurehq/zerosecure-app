@@ -51,6 +51,7 @@ const History = () => {
           A list of your history transactions.
         </TableCaption> */}
         <TableBody>
+          {/* {isProcessing && <RawSkeleton />} */}
           {transactions.map((transaction, index) => (
             <TableRow key={index} className="text-center relative">
               <TableCell className="font-medium">{transaction.to}</TableCell>

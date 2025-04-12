@@ -499,6 +499,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                             setCurrentStep(currentStep - 1);
                           }
                         }}
+                        disabled={isProcessing}
                       >
                         Back
                       </Button>

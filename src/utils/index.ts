@@ -1,6 +1,8 @@
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { getMultisigWalletBalance } from "zerosecurehq-sdk";
 
+export const network = WalletAdapterNetwork.MainnetBeta;
+
 export function convertKey(input: string): string {
   if (input.length <= 8) return input; // Nếu chuỗi quá ngắn, không cần xử lý
 
@@ -30,12 +32,15 @@ export const getBalanceMultiWallet = async (
   multisigWalletAddress: string
 ) => {
   const result = await getMultisigWalletBalance(network, multisigWalletAddress);
-  return result;
+  return isNaN(result) ? 0 : result;
 };
 
-export const isArrayChangedById = (oldArray: { id: string }[], newArray: { id: string }[]) => {
-  const oldIds = oldArray.map(item => item.id).sort();
-  const newIds = newArray.map(item => item.id).sort();
+export const isArrayChangedById = (
+  oldArray: { id: string }[],
+  newArray: { id: string }[]
+) => {
+  const oldIds = oldArray.map((item) => item.id).sort();
+  const newIds = newArray.map((item) => item.id).sort();
 
   if (oldIds.length !== newIds.length) return true;
 
@@ -45,3 +50,27 @@ export const isArrayChangedById = (oldArray: { id: string }[], newArray: { id: s
 
   return false;
 };
+
+export const getAddedOwners = (
+  newOwners: string[],
+  oldOwners: string[]
+): number => {
+  const newSet = new Set(newOwners);
+  const oldSet = new Set(oldOwners);
+
+  return [...newSet].filter((addr) => !oldSet.has(addr)).length;
+};
+
+export const getRemovedOwners = (
+  newOwners: string[],
+  oldOwners: string[]
+): number => {
+  const newSet = new Set(newOwners);
+  const oldSet = new Set(oldOwners);
+
+  return [...oldSet].filter((addr) => !newSet.has(addr)).length;
+};
+
+export const enoughComfirm = (confirmed: string, request: string): boolean => {
+  return parseInt(confirmed) >= parseInt(request);
+}
