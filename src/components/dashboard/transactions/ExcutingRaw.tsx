@@ -68,7 +68,7 @@ const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
       </TableCell>
       <TableCell>{removeVisibleModifier(data.data.amount)}</TableCell>
       <TableCell>
-        {/* @TODO transaction creation time cant not be obtained from local wallet, will need database for it*/}
+        {/* @TODO (need backend) transaction creation time cant not be obtained from local wallet, will need database for it*/}
         {new Date(Date.now()).toLocaleString()}
       </TableCell>
       <TableCell>

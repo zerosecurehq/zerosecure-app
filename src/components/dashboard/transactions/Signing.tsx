@@ -42,14 +42,6 @@ const Signing = () => {
       <Table>
         <TableCaption className="caption-top text-sm">
           Your signing transactions will be listed here.
-          {isProcessing && (
-            <p className="text-center mt-3">
-              Please wait while we are fetching your signing transactions ...
-            </p>
-          )}
-          {!isProcessing && signing.length === 0 && (
-            <p className="text-center mt-3">No signing transactions</p>
-          )}
         </TableCaption>
         <TableBody>
           {isProcessing && <RawSkeleton />}

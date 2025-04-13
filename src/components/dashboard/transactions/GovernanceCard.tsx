@@ -14,7 +14,8 @@ import { toast } from "sonner";
 
 import {
   ConfirmChangeGovernanceTicketRecord,
-  getCurrentTransactionConfirmations,
+  ExecuteChangeGovernanceTicketRecord,
+  getCurrentGovernanceChangeConfirmations,
   removeVisibleModifier,
   useApplyConfirmChangeGovernanceTicket,
   useApplyExecuteChangeGovernanceTicket,
@@ -22,13 +23,17 @@ import {
 } from "zerosecurehq-sdk";
 
 interface GovernanceCardProps {
-  data: ConfirmChangeGovernanceTicketRecord;
+  data:
+    | ConfirmChangeGovernanceTicketRecord
+    | ExecuteChangeGovernanceTicketRecord;
+  type: "confirm" | "execute";
   getGovernanceConfirm: () => Promise<void>;
   getGovernanceExecute: () => Promise<void>;
 }
 
 const GovernanceCard = ({
   data,
+  type,
   getGovernanceConfirm,
   getGovernanceExecute,
 }: GovernanceCardProps) => {
@@ -59,9 +64,9 @@ const GovernanceCard = ({
   }, [errorConfirm, errorExecute]);
 
   const getGovernanceConfirmed = async () => {
-    const result = await getCurrentTransactionConfirmations(
+    const result = await getCurrentGovernanceChangeConfirmations(
       network,
-      data.data.request_id
+      removeVisibleModifier(data.data.request_id)
     );
     if (result !== undefined || result !== null) {
       setConfirmed(result);
@@ -95,6 +100,8 @@ const GovernanceCard = ({
     if (!selectedWallet) return;
     const txIdHash = await applyConfirmChangeGovernanceTicket(data);
     if (txIdHash) {
+      // @TODO: sometimes it takes a while to update Confirm to Execute. We should mark a confirm ticket as "used" and dont list it again in Confirm List (used request_id to identify Confirm Ticket).
+      // NOTE: request_id is same for Confirm and Execute (for all owners also) if they come from the same governance change.
       toast.success("Governance confirmed");
       resetConfirm();
       getGovernanceConfirm();
@@ -106,6 +113,8 @@ const GovernanceCard = ({
     if (!selectedWallet) return;
     const txIdHash = await applyExecuteChangeGovernanceTicket(data);
     if (txIdHash) {
+      // @TODO: when executed change goverance, the current WalletRecord will be outdated. We should remove selected wallet from local and refetch by getWalletCreated() and update it.
+      // @TODO (need sdk update): and for owners that also have the same wallet, we should add a logic to check if the wallet is still valid or not when user open the app.
       toast.success("Governance excuted");
       resetExecute();
       getGovernanceExecute();
@@ -117,18 +126,22 @@ const GovernanceCard = ({
     <TableRow className="text-center relative cursor-pointer">
       <TableCell>{`Add(+${addCount}) | Remove(-${removeCount})`}</TableCell>
       <TableCell>{parseInt(data.data.new_threshold)}</TableCell>
-      {/* @TODO add date */}
+      {/* @TODO (need backend) add date */}
       <TableCell>{data.data.sequence}</TableCell>
       <TableCell>
         <Button
           variant={"outline"}
-          onClick={isEnough ? handleExcuteGovernence : handleConfirmGovernance}
+          onClick={
+            type === "execute"
+              ? handleExcuteGovernence
+              : handleConfirmGovernance
+          }
           disabled={isProcessingConfirm || isProcessingExecute}
         >
           {isProcessingConfirm || isProcessingExecute ? (
             <Loader2Icon className="animate-spin" />
           ) : (
-            <>{isEnough ? "Execute" : "Agree"}</>
+            <>{type === "execute" ? "Execute" : "Agree"}</>
           )}
         </Button>
       </TableCell>

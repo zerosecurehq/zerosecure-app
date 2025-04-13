@@ -272,14 +272,6 @@ const DepositButton = ({
       return;
     }
     if (depositType === "public" && selectedWallet) {
-      // @TODO check amount > balance
-      // setTimeout(() => {
-      //   console.log(
-      //     selectedWallet.data.wallet_address,
-      //     credisToMicrocredis(amount)
-      //   );
-      // }, 1000);
-
       const txHash = await createDeposit(
         typeRecord === "token" ? tokenSelected : CREDITS_TOKEN_ID,
         removeVisibleModifier(selectedWallet.data.wallet_address),
@@ -360,7 +352,12 @@ const DepositButton = ({
       open={openDeposit}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" className={className} disabled={isProcessing} onClick={() => setOpenDeposit(true)}>
+        <Button
+          variant="outline"
+          className={className}
+          disabled={isProcessing}
+          onClick={() => setOpenDeposit(true)}
+        >
           {isProcessing ? <Loader2 className="animate-spin" /> : text}
         </Button>
       </DialogTrigger>

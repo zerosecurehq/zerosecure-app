@@ -38,7 +38,7 @@ import {
 } from "zerosecurehq-sdk";
 import { ZERO_ADDRESS } from "../connect/CardWallet";
 import GovernanceRow from "@/components/dashboard/governance/GovernanceRow";
-import { UserPlus2 } from "lucide-react";
+import { Loader2, UserPlus2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { isArrayChangedById } from "@/utils";
@@ -109,8 +109,13 @@ const Governance = () => {
       })
       .filter((item) => item !== undefined);
     const newOwners = newSignerList.map((item) => ({ id: item.address }));
-    const isChanged = isArrayChangedById(oldOwners, newOwners);
+    const isChanged =
+      isArrayChangedById(oldOwners, newOwners) ||
+      parseInt(newThreshold) !== parseInt(selectedWallet.data.threshold);
     if (!isChanged) return toast.error("No changes detected");
+    toast(
+      "Please wait while we prepare your transaction, it may take a few minutes..."
+    );
     const txIdHash = await createChangeGovernance(
       selectedWallet,
       [...newSignerList.map((item) => removeVisibleModifier(item.address))],
@@ -283,7 +288,9 @@ const Governance = () => {
         </CardContent>
         <CardFooter className="flex justify-end items-center gap-3">
           <Button variant="outline">Cancel</Button>
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={handleSave}>
+            {isProcessing ? <Loader2 className="animate-spin" /> : "Save"}
+          </Button>
         </CardFooter>
       </Card>
     </section>

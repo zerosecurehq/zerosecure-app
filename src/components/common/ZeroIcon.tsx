@@ -16,9 +16,9 @@ export default function ZeroIcon({
     >
       <path
         fill='url("#SvgjsLinearGradient2822")'
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M100 0H0v100h100v100h100V100H100V0Z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       ></path>
       <defs>
         <linearGradient
@@ -26,18 +26,18 @@ export default function ZeroIcon({
           id="SvgjsLinearGradient2822"
         >
           <stop
-            stop-opacity=" 1"
-            stop-color="rgba(43, 127, 255)"
+            stopOpacity=" 1"
+            stopColor="rgba(43, 127, 255)"
             offset="0"
           ></stop>
           <stop
-            stop-opacity=" 1"
-            stop-color="rgba(43, 127, 255)"
+            stopOpacity=" 1"
+            stopColor="rgba(43, 127, 255)"
             offset="0.48"
           ></stop>
           <stop
-            stop-opacity=" 1"
-            stop-color="rgba(43, 127, 255)"
+            stopOpacity=" 1"
+            stopColor="rgba(43, 127, 255)"
             offset="1"
           ></stop>
         </linearGradient>

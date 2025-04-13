@@ -1,7 +1,7 @@
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { getMultisigWalletBalance } from "zerosecurehq-sdk";
 
-export const network = WalletAdapterNetwork.MainnetBeta;
+export const network = WalletAdapterNetwork.TestnetBeta;
 
 export function convertKey(input: string): string {
   if (input.length <= 8) return input; // Nếu chuỗi quá ngắn, không cần xử lý
@@ -73,4 +73,4 @@ export const getRemovedOwners = (
 
 export const enoughComfirm = (confirmed: string, request: string): boolean => {
   return parseInt(confirmed) >= parseInt(request);
-}
+};

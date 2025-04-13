@@ -1,8 +1,4 @@
-import {
-  Table,
-  TableBody,
-  TableCaption,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCaption } from "@/components/ui/table";
 import GovernanceCard from "./GovernanceCard";
 import {
   ConfirmChangeGovernanceTicketRecord,
@@ -70,20 +66,7 @@ const GovernanceList = () => {
     <article>
       <Table>
         <TableCaption className="caption-top text-sm">
-          Your governance transactions will be listed here.
-          {(isProcessingConfirm || isProcessingExcute) && (
-            <p className="mt-3 text-center">
-              Please wait while we are fetching your signing transactions ...
-            </p>
-          )}
-          {!isProcessingConfirm &&
-            !isProcessingExcute &&
-            governanceComfirm.length &&
-            governanceExecute.length === 0 && (
-              <p className="mt-3 text-center">
-                You have no governance transactions.
-              </p>
-            )}
+          Your governance change request will be listed here.
         </TableCaption>
         <TableBody>
           {(isProcessingConfirm || isProcessingExcute) && <RawSkeleton />}
@@ -102,6 +85,7 @@ const GovernanceList = () => {
             .map((item) => (
               <GovernanceCard
                 key={item.id}
+                type="confirm"
                 data={item}
                 getGovernanceConfirm={getGovernanceConfirm}
                 getGovernanceExecute={getGovernanceExecute}
@@ -121,6 +105,7 @@ const GovernanceList = () => {
             .map((item) => (
               <GovernanceCard
                 key={item.id}
+                type="execute"
                 data={item}
                 getGovernanceConfirm={getGovernanceConfirm}
                 getGovernanceExecute={getGovernanceExecute}

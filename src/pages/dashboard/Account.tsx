@@ -154,7 +154,7 @@ const Account = () => {
                         </div>
                       )}
                     </div> */}
-                    {/* @TODO: use checkbox for it */}
+                    {"@TODO: make sure user have agreed to the terms"}
                     <div className="flex space-x-1.5 items-center">
                       <Checkbox />
                       <p className="text-sm">

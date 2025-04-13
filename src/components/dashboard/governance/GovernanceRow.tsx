@@ -24,26 +24,32 @@ interface GovernanceRowProps {
   handleDelete: (publicKey: string) => void;
 }
 
-const GovernanceRow = ({ data, handleDelete, isProcessing }: GovernanceRowProps) => {
+const GovernanceRow = ({
+  data,
+  handleDelete,
+  isProcessing,
+}: GovernanceRowProps) => {
   const { publicKey } = useAccount();
-
+  let isSelf = removeVisibleModifier(data.address) === publicKey;
+  console.log("isSelf", isSelf);
   return (
-    <TableRow
-      className={`${
-        removeVisibleModifier(data.address) === publicKey &&
-        "pointer-events-none bg-gray-100"
-      }`}
-    >
+    <TableRow className={`${isSelf && "pointer-events-none bg-gray-100"}`}>
       <TableCell className="text-center">
         {data.name?.trim() ? data.name : "No name"}
       </TableCell>
-      <TableCell className="line-clamp-1 truncate">
+      {/* @TODO: vertically center the address  */}
+      <TableCell className="flex items-center">
         {removeVisibleModifier(data.address)}
       </TableCell>
       <TableCell>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="outline" className="group hover:border-red-400">
+            <Button
+              variant="outline"
+              className={`group hover:border-red-400 ${
+                isSelf ? "opacity-0" : ""
+              }`}
+            >
               <Trash2Icon className="group-hover:text-red-400" />
             </Button>
           </AlertDialogTrigger>
