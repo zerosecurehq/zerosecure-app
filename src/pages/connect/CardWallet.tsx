@@ -29,11 +29,15 @@ const CardWallet = ({
 
   useEffect(() => {
     const getBalance = async () => {
-      const result = await getBalanceMultiWallet(
-        WalletAdapterNetwork.TestnetBeta,
-        wallet!.data.wallet_address
-      );
-      setBalanceMultiWallet(result);
+      try {
+        const result = await getBalanceMultiWallet(
+          WalletAdapterNetwork.TestnetBeta,
+          wallet!.data.wallet_address
+        );
+        setBalanceMultiWallet(result);
+      } catch (error) {
+        setBalanceMultiWallet(0);
+      }
     };
     getBalance();
   }, [wallet]);

@@ -127,21 +127,25 @@ const Connect = () => {
   useEffect(() => {
     if (!publicKey) {
       return;
-    };
+    }
     const storedNames = localStorage.getItem("name");
     const parsedNames = storedNames
       ? (JSON.parse(storedNames) as Record<string, Record<string, string>>)
       : {};
     const filteredWallets = wallets.filter((wallet) => {
       const walletName =
-        parsedNames[removeVisibleModifier(wallet.data.wallet_address)]?.[publicKey] || "";
+        parsedNames[removeVisibleModifier(wallet.data.wallet_address)]?.[
+          publicKey
+        ] || "";
       return (
         search === "" || walletName.toLowerCase().includes(search.toLowerCase())
       );
     });
     const filteredPinnedWallets = pinnedWallets.filter((wallet) => {
       const walletName =
-        parsedNames[removeVisibleModifier(wallet.data.wallet_address)]?.[publicKey] || "";
+        parsedNames[removeVisibleModifier(wallet.data.wallet_address)]?.[
+          publicKey
+        ] || "";
       return (
         search === "" || walletName.toLowerCase().includes(search.toLowerCase())
       );
@@ -193,9 +197,9 @@ const Connect = () => {
 
             {/* Import Safe */}
             <div className="mt-6 flex flex-col items-center gap-4">
-              <p>
+              <div>
                 <Skeleton className="w-96 h-5 rounded-full mb-2" />
-              </p>
+              </div>
             </div>
           </div>
         </div>
