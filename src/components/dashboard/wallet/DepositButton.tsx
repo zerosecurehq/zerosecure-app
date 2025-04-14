@@ -57,29 +57,27 @@ const Page1 = ({
         }
       />
       <div>
-          {typeRecord === "token" && (
-            <>
-              <Label>Select token</Label>
-              <Select
-                onValueChange={(value) => setTokenSelected(value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a...." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Select a token</SelectLabel>
-                    {tokens.map((token) => (
-                      <SelectItem value={token.token_id} key={token.token_id}>
-                        {token.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </>
-          )}
-        </div>
+        {typeRecord === "token" && (
+          <>
+            <Label>Select token</Label>
+            <Select onValueChange={(value) => setTokenSelected(value)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a...." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Select a token</SelectLabel>
+                  {tokens.map((token) => (
+                    <SelectItem value={token.token_id} key={token.token_id}>
+                      {token.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </>
+        )}
+      </div>
       <div className="flex- space-y-2">
         <div>
           <Label>Type of deposit</Label>
@@ -263,7 +261,7 @@ const DepositButton = ({
   const [amount, setAmount] = useState(0);
   const { createDeposit, error, isProcessing, reset, txId } =
     useCreateDeposit();
-  const { selectedWallet } = useAccount();
+  const { selectedWallet, tokens, setTokens } = useAccount();
   const { getCreditsRecord } = useGetCreditsRecord();
   const [typeRecord, setTypeRecord] = useState<"" | "credits" | "token">("");
   const [tokenSelected, setTokenSelected] = useState("");
@@ -292,6 +290,10 @@ const DepositButton = ({
         setTokenSelected("");
         setTypeRecord("");
         setOpenDeposit(false);
+        const deleteToken = tokens.filter(
+          (item) => item.token_id !== tokenSelected
+        );
+        setTokens(deleteToken);
       }
     } else if (depositType === "private" && selectedWallet) {
       let creditsRecord;
@@ -338,6 +340,12 @@ const DepositButton = ({
         setTokenSelected("");
         setTypeRecord("");
         setOpenDeposit(false);
+        if (typeRecord === "token") {
+          const deleteToken = tokens.filter(
+            (item) => item.token_id !== tokenSelected
+          );
+          setTokens(deleteToken);
+        }
       }
     }
   };

@@ -22,6 +22,7 @@ interface AccountState {
   resetWallet: () => void;
   tokens: TokenMetadata[];
   setTokens: (tokens: TokenMetadata[]) => void;
+  removeToken: (tokenId: string) => void;
 }
 
 const gradients = [
@@ -165,14 +166,40 @@ const useAccount = create<AccountState>((set) => ({
   setTokens: (newTokens: TokenMetadata[]) => {
     set((state) => {
       if (!state.publicKey) return state;
+
       const tokenOld = JSON.parse(localStorage.getItem("token") || "{}");
-      const existingIds = new Set(state.tokens.map((token) => token.token_id));
-      const uniqueNewTokens = newTokens.filter(
-        (token) => !existingIds.has(token.token_id)
+      const currentTokens = tokenOld[state.publicKey] || [];
+
+      const existingIds = new Set(
+        currentTokens.map((token: TokenMetadata) => token.token_id)
       );
-      tokenOld[state.publicKey] = [...state.tokens, ...uniqueNewTokens];
+
+      const mergedTokens = [
+        ...currentTokens,
+        ...newTokens.filter((token) => !existingIds.has(token.token_id)),
+      ];
+
+      tokenOld[state.publicKey] = mergedTokens;
       localStorage.setItem("token", JSON.stringify(tokenOld));
-      return { tokens: [...state.tokens, ...uniqueNewTokens] };
+
+      return { tokens: mergedTokens };
+    });
+  },
+  removeToken: (tokenId: string) => {
+    set((state) => {
+      if (!state.publicKey) return state;
+
+      const tokenOld = JSON.parse(localStorage.getItem("token") || "{}");
+      const currentTokens = tokenOld[state.publicKey] || [];
+
+      const filteredTokens = currentTokens.filter(
+        (token: TokenMetadata) => token.token_id !== tokenId
+      );
+
+      tokenOld[state.publicKey] = filteredTokens;
+      localStorage.setItem("token", JSON.stringify(tokenOld));
+
+      return { tokens: filteredTokens };
     });
   },
 }));

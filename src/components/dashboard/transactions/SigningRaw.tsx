@@ -60,8 +60,8 @@ const SigningRaw = ({ data, getSigning, setSigning }: SigningRawProps) => {
     const signed = JSON.parse(
       localStorage.getItem("signedTransactions") || "[]"
     );
-    if (!signed.includes(dataConfirm.data.wallet_address)) {
-      signed.push(dataConfirm.data.wallet_address);
+    if (!signed.includes(dataConfirm.id)) {
+      signed.push(dataConfirm.id);
       localStorage.setItem("signedTransactions", JSON.stringify(signed));
     }
     setSigning((state) =>

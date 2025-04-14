@@ -20,7 +20,9 @@ const Signing = () => {
     // how: when user successfully signed transaction, we should mark it as signed in the local storage
     const confirmTickets = await getConfirmTransferTicket();
     if (confirmTickets !== void 0) {
-      setSigning(confirmTickets);
+      const signed = JSON.parse(localStorage.getItem("signedTransactions") || "[]");
+      const filtered = confirmTickets.filter((item) => !signed.includes(item.id));
+      setSigning(filtered);
     }
   };
 

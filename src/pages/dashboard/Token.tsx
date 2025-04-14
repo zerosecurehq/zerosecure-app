@@ -63,7 +63,7 @@ export const fakeTokens: TokenRecord[] = [
 const Token = () => {
   const { publicKey } = useWallet();
   const [tokenId, setTokenId] = useState("");
-  const { tokens, setTokens } = useAccount();
+  const { tokens, setTokens, removeToken } = useAccount();
 
   useEffect(() => {
     if (publicKey) {
@@ -74,23 +74,23 @@ const Token = () => {
     }
   }, [publicKey]);
 
+  const handleDelete = (id: string) => {
+    removeToken(id);
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tokenId) return;
     if (tokens.some((item) => item.token_id === tokenId)) {
       toast("Token already exists");
+      setTokenId("");
       return;
     };
     const infoToken = await getTokenMetadata(network, tokenId);
     if (infoToken) {
       setTokens([infoToken]);
+      setTokenId("");
     }
-    // if (Array.isArray(tokenRecord)) {
-    //   setToken(tokenRecord);
-    //   setTokenId("");
-    //   toast("Token transactions fetched successfully");
-    //   reset();
-    // }
   };
 
   return (
@@ -134,7 +134,7 @@ const Token = () => {
             <TableBody>
               {tokens.length > 0 &&
                 tokens.map((item, index) => (
-                  <TokenRaw key={index} token={item} />
+                  <TokenRaw key={index} token={item} handleDelete={handleDelete} />
                 ))}
             </TableBody>
           </Table>
