@@ -1,6 +1,9 @@
 import { create } from "zustand";
-import { removeVisibleModifier, WalletRecord } from "zerosecurehq-sdk";
-import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
+import {
+  removeVisibleModifier,
+  TokenMetadata,
+  WalletRecord,
+} from "zerosecurehq-sdk";
 
 export interface WalletRecordData extends WalletRecord {
   avatar?: string;
@@ -17,8 +20,8 @@ interface AccountState {
   setSelectedWallet: (wallet: WalletRecordData | null) => void;
   resetAccount: () => void;
   resetWallet: () => void;
-  tokens: TokenRecord[];
-  setToken: (tokens: TokenRecord[]) => void;
+  tokens: TokenMetadata[];
+  setTokens: (tokens: TokenMetadata[]) => void;
 }
 
 const gradients = [
@@ -159,13 +162,17 @@ const useAccount = create<AccountState>((set) => ({
     }),
   resetWallet: () => set({ selectedWallet: null }),
 
-  setToken: (newTokens: TokenRecord[]) => {
+  setTokens: (newTokens: TokenMetadata[]) => {
     set((state) => {
       if (!state.publicKey) return state;
-      updateStoredAccount(state.publicKey, {
-        tokens: [...state.tokens, ...newTokens],
-      });
-      return { tokens: [...state.tokens, ...newTokens] };
+      const tokenOld = JSON.parse(localStorage.getItem("token") || "{}");
+      const existingIds = new Set(state.tokens.map((token) => token.token_id));
+      const uniqueNewTokens = newTokens.filter(
+        (token) => !existingIds.has(token.token_id)
+      );
+      tokenOld[state.publicKey] = [...state.tokens, ...uniqueNewTokens];
+      localStorage.setItem("token", JSON.stringify(tokenOld));
+      return { tokens: [...state.tokens, ...uniqueNewTokens] };
     });
   },
 }));

@@ -4,7 +4,7 @@ import { getMultisigWalletBalance } from "zerosecurehq-sdk";
 export const network = WalletAdapterNetwork.TestnetBeta;
 
 export function convertKey(input: string): string {
-  if (input.length <= 8) return input; // Nếu chuỗi quá ngắn, không cần xử lý
+  if (input.length <= 8) return input;
 
   const firstPart = input.slice(0, 4);
   const lastPart = input.slice(-4);

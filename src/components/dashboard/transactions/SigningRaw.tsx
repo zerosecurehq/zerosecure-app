@@ -5,7 +5,7 @@ import useAccount from "@/stores/useAccount";
 import { formatAleoAddress } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   ConfirmTransferTicketRecord,
@@ -17,9 +17,10 @@ import {
 interface SigningRawProps {
   data: ConfirmTransferTicketRecord;
   getSigning: () => void;
+  setSigning: Dispatch<SetStateAction<ConfirmTransferTicketRecord[]>>;
 }
 
-const SigningRaw = ({ data, getSigning }: SigningRawProps) => {
+const SigningRaw = ({ data, getSigning, setSigning }: SigningRawProps) => {
   const {
     applyConfirmTransferTicket,
     error,
@@ -56,6 +57,18 @@ const SigningRaw = ({ data, getSigning }: SigningRawProps) => {
     dataConfirm: ConfirmTransferTicketRecord
   ) => {
     const txHash = await applyConfirmTransferTicket(dataConfirm);
+    const signed = JSON.parse(
+      localStorage.getItem("signedTransactions") || "[]"
+    );
+    if (!signed.includes(dataConfirm.data.wallet_address)) {
+      signed.push(dataConfirm.data.wallet_address);
+      localStorage.setItem("signedTransactions", JSON.stringify(signed));
+    }
+    setSigning((state) =>
+      state.filter(
+        (item) => item.data.wallet_address !== dataConfirm.data.wallet_address
+      )
+    );
     if (txHash) {
       resetConfirm();
       getSigning();

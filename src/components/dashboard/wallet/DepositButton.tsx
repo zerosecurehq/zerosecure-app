@@ -35,6 +35,7 @@ import {
   useGetCreditsRecord,
 } from "zerosecurehq-sdk";
 import { Loader2 } from "lucide-react";
+import { useGetTokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 
 const Page1 = ({
   setAmount,
@@ -55,6 +56,30 @@ const Page1 = ({
           "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
         }
       />
+      <div>
+          {typeRecord === "token" && (
+            <>
+              <Label>Select token</Label>
+              <Select
+                onValueChange={(value) => setTokenSelected(value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a...." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Select a token</SelectLabel>
+                    {tokens.map((token) => (
+                      <SelectItem value={token.token_id} key={token.token_id}>
+                        {token.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </>
+          )}
+        </div>
       <div className="flex- space-y-2">
         <div>
           <Label>Type of deposit</Label>
@@ -76,28 +101,6 @@ const Page1 = ({
               </SelectGroup>
             </SelectContent>
           </Select>
-        </div>
-        <div>
-          {typeRecord === "token" && (
-            <>
-              <Label>Select token</Label>
-              <Select onValueChange={(value) => setTokenSelected(value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a...." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Select a token</SelectLabel>
-                    {tokens.map((token) => (
-                      <SelectItem value={token.data.token_id} key={token.id}>
-                        {token.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </>
-          )}
         </div>
         <div>
           <Label>Amount</Label>
@@ -260,11 +263,16 @@ const DepositButton = ({
   const [amount, setAmount] = useState(0);
   const { createDeposit, error, isProcessing, reset, txId } =
     useCreateDeposit();
-  const { selectedWallet, tokens } = useAccount();
+  const { selectedWallet } = useAccount();
   const { getCreditsRecord } = useGetCreditsRecord();
   const [typeRecord, setTypeRecord] = useState<"" | "credits" | "token">("");
   const [tokenSelected, setTokenSelected] = useState("");
   const [openDeposit, setOpenDeposit] = useState(false);
+  const {
+    error: errorToken,
+    getTokenRecord,
+    reset: resetToken,
+  } = useGetTokenRecord();
 
   const handleDeposit = async () => {
     if (amount <= 0) {
@@ -296,24 +304,30 @@ const DepositButton = ({
             microCreditsToCredits(parseInt(item.data.microcredits)) >= amount
         );
         if (!creditsRecord) {
+          setStep(1);
           toast.error("No enough credits");
           return;
         }
       }
       if (typeRecord === "token") {
-        tokenRecord = tokens.find(
-          (item) =>
-            item.data.token_id === tokenSelected &&
-            microCreditsToCredits(parseInt(item.data.amount)) >= amount
+        const tokenRecords = await getTokenRecord(tokenSelected);
+        if (!tokenRecords) {
+          setStep(1);
+          toast("Tokens not found");
+          return;
+        }
+        tokenRecord = tokenRecords.find(
+          (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
         );
         if (!tokenRecord) {
-          toast("Token not found");
+          setStep(1);
+          toast.error("No enough tokens");
           return;
         }
       }
       const txHash = await createDeposit(
         typeRecord === "credits" ? CREDITS_TOKEN_ID : tokenSelected,
-        selectedWallet.data.wallet_address,
+        removeVisibleModifier(selectedWallet.data.wallet_address),
         creditsToMicroCredits(amount),
         typeRecord === "credits" ? creditsRecord : tokenRecord
       );
@@ -327,6 +341,13 @@ const DepositButton = ({
       }
     }
   };
+
+  useEffect(() => {
+    if (errorToken) {
+      toast(`Error despositing ${error.message}`);
+      resetToken();
+    }
+  }, [errorToken]);
 
   useEffect(() => {
     if (error) {

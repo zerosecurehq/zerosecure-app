@@ -15,12 +15,13 @@ import { useEffect, useState } from "react";
 import {
   CREDITS_TOKEN_ID,
   removeVisibleModifier,
+  TokenMetadata,
   useCreateTransaction,
 } from "zerosecurehq-sdk";
 import { toast } from "sonner";
 import useAccount from "@/stores/useAccount";
 import { Loader2 } from "lucide-react";
-import { creditsToMicroCredits, formatAleoAddress } from "@/utils";
+import { creditsToMicroCredits, formatAleoAddress, microCreditsToCredits } from "@/utils";
 import {
   Select,
   SelectContent,
@@ -30,13 +31,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { fakeTokens } from "../transactions/Token";
+import { useGetTokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 
 const Page1 = ({
+  tokens,
   setAmount,
   setRecipient,
   setTokenSelected,
 }: {
+  tokens: TokenMetadata[];
   setAmount: (amount: number) => void;
   setRecipient: (address: string) => void;
   setTokenSelected: (token: string) => void;
@@ -48,13 +51,6 @@ const Page1 = ({
           "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
         }
       />
-      <div className="flex- space-y-1.5">
-        <Label>Recipient address</Label>
-        <Input
-          placeholder="aleo1qz8...da2s"
-          onChange={(e) => setRecipient(e.target.value)}
-        />
-      </div>
       <div>
         <Label>Select token</Label>
         <Select onValueChange={(value) => setTokenSelected(value)}>
@@ -65,14 +61,21 @@ const Page1 = ({
             <SelectGroup>
               <SelectLabel>Select a token</SelectLabel>
               <SelectItem value={CREDITS_TOKEN_ID}>Remove token</SelectItem>
-              {fakeTokens.map((token) => (
-                <SelectItem value={token.data.token_id} key={token.id}>
+              {tokens.map((token) => (
+                <SelectItem value={token.token_id} key={token.token_id}>
                   {token.name}
                 </SelectItem>
               ))}
             </SelectGroup>
           </SelectContent>
         </Select>
+      </div>
+      <div className="flex- space-y-1.5">
+        <Label>Recipient address</Label>
+        <Input
+          placeholder="aleo1qz8...da2s"
+          onChange={(e) => setRecipient(e.target.value)}
+        />
       </div>
       <div className="flex- space-y-1.5">
         <Label>Amount</Label>
@@ -207,13 +210,14 @@ const NewTransactionButton = ({
 }) => {
   const [step, setStep] = useState(1);
   const [feeType, setFeeType] = useState<"public" | "private">("public");
-  const { selectedWallet } = useAccount();
+  const { selectedWallet, tokens } = useAccount();
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState(0);
   const { createTransaction, error, isProcessing, reset, txId } =
     useCreateTransaction();
   const [tokenSelected, setTokenSelected] = useState(CREDITS_TOKEN_ID);
   const [openTransfer, setOpenTransfer] = useState(false);
+  const { getTokenRecord, error: errorToken, } = useGetTokenRecord();
 
   const handleCreateTransaction = async () => {
     if (!selectedWallet) return;
@@ -221,6 +225,21 @@ const NewTransactionButton = ({
     // setTimeout(() => {
     //   console.log(walletWithoutAvatar, recipient, credisToMicrocredis(amount));
     // }, 1000);
+
+    const tokenRecords = await getTokenRecord(tokenSelected);
+    if (!tokenRecords) {
+      setStep(1);
+      toast("Tokens not found");
+      return;
+    }
+    const tokenRecord = tokenRecords.find(
+      (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
+    );
+    if (!tokenRecord) {
+      toast.error("No enough tokens");
+      setStep(1);
+      return;
+    }
 
     const txHash = await createTransaction(
       walletWithoutAvatar,
@@ -248,6 +267,12 @@ const NewTransactionButton = ({
       setStep(3);
     }
   }, [error, txId]);
+
+  useEffect(() => {
+    if (errorToken) {
+      toast.error(errorToken.message);
+    }
+  }, [errorToken])
 
   return (
     <Dialog
@@ -286,6 +311,7 @@ const NewTransactionButton = ({
                 {
                   1: (
                     <Page1
+                      tokens={tokens}
                       setRecipient={setRecipient}
                       setAmount={setAmount}
                       setTokenSelected={setTokenSelected}

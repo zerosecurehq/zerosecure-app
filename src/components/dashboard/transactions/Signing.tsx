@@ -47,7 +47,7 @@ const Signing = () => {
           {isProcessing && <RawSkeleton />}
           {signing.length > 0 &&
             signing.map((item, index) => (
-              <SigningRaw key={index} data={item} getSigning={getSigning} />
+              <SigningRaw setSigning={setSigning} key={index} data={item} getSigning={getSigning} />
             ))}
         </TableBody>
       </Table>

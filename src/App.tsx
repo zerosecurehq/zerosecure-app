@@ -23,6 +23,7 @@ import { WalletProvider } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletModalProvider } from "@demox-labs/aleo-wallet-adapter-reactui";
 import { Toaster } from "./components/ui/sonner";
 import Governance from "./pages/dashboard/Governance";
+import Token from "./pages/dashboard/Token";
 
 const App = () => {
   const wallets = useMemo(
@@ -84,6 +85,7 @@ const App = () => {
               <Route path="need-help" element={<NeedHelp />} />
               <Route path="connect" element={<Connect />} />
               <Route path="governance" element={<Governance />} />
+              <Route path="token" element={<Token />} />
             </Route>
           </Routes>
         </main>{" "}

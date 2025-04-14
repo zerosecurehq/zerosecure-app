@@ -3,9 +3,9 @@ import {
   Bell,
   ChevronDown,
   ChevronUp,
+  Coins,
   Home,
   KeyRound,
-  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button"
 import {
@@ -27,8 +27,8 @@ import { useState } from "react";
 const NAVIGATE_PAGES = [
   { name: "Home", icon: Home, href: "/" },
   { name: "Transactions", icon: ArrowUpDown, href: "/transactions" },
-  { name: "Account", icon: User, href: "/connect" },
   { name: " Governance", icon: KeyRound, href: "/governance" },
+  { name: " Token", icon: Coins, href: "/token" },
 ];
 
 const Header = () => {
@@ -111,7 +111,10 @@ const Header = () => {
                 <CardHeader>
                   <CardTitle>Wallet</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex flex-col gap-2">
+                  <Link to="/connect" className="w-full">
+                    <Button variant={"outline"} className="w-full">Manage Account</Button>
+                  </Link>
                   <Button  variant={"outline"} className="w-full" onClick={() => {
                     setOpen(false);
                     resetWallet()

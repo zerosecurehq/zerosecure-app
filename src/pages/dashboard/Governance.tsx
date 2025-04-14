@@ -43,6 +43,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { isArrayChangedById } from "@/utils";
 import useAccount from "@/stores/useAccount";
+import Warning from "@/components/ui/Warning";
 
 // const selected = {
 //   id: "a1b2c3d4-e5f6-7g8h-9i10-j11k12l13m14",
@@ -158,7 +159,14 @@ const Governance = () => {
   if (!selectedWallet) return null;
 
   return (
-    <section className="bg-gray-100 w-full px-28 py-14">
+    <section className="w-full overflow-auto px-28">
+      <div className="py-4">
+        <Warning
+          msg={
+            "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
+          }
+        />
+      </div>
       <Card>
         <CardHeader className="flex items-center flex-row justify-between gap-3">
           <div>
