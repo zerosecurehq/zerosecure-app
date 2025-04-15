@@ -21,7 +21,11 @@ import {
 import { toast } from "sonner";
 import useAccount from "@/stores/useAccount";
 import { Loader2 } from "lucide-react";
-import { creditsToMicroCredits, formatAleoAddress, microCreditsToCredits } from "@/utils";
+import {
+  creditsToMicroCredits,
+  formatAleoAddress,
+  microCreditsToCredits,
+} from "@/utils";
 import {
   Select,
   SelectContent,
@@ -217,28 +221,29 @@ const NewTransactionButton = ({
     useCreateTransaction();
   const [tokenSelected, setTokenSelected] = useState(CREDITS_TOKEN_ID);
   const [openTransfer, setOpenTransfer] = useState(false);
-  const { getTokenRecord, error: errorToken, } = useGetTokenRecord();
+  const { getTokenRecord, error: errorToken } = useGetTokenRecord();
 
   const handleCreateTransaction = async () => {
     if (!selectedWallet) return;
     const { avatar, ...walletWithoutAvatar } = selectedWallet;
-    // setTimeout(() => {
-    //   console.log(walletWithoutAvatar, recipient, credisToMicrocredis(amount));
-    // }, 1000);
 
-    const tokenRecords = await getTokenRecord(tokenSelected);
-    if (!tokenRecords) {
-      setStep(1);
-      toast("Tokens not found");
-      return;
-    }
-    const tokenRecord = tokenRecords.find(
-      (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
-    );
-    if (!tokenRecord) {
-      toast.error("No enough tokens");
-      setStep(1);
-      return;
+    if (tokenSelected !== CREDITS_TOKEN_ID) {
+      const tokenRecords = await getTokenRecord(tokenSelected);
+      if (!tokenRecords) {
+        setStep(1);
+        toast("Tokens not found");
+        return;
+      }
+
+      const tokenRecord = tokenRecords.find(
+        (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
+      );
+
+      if (!tokenRecord) {
+        toast.error("No enough tokens");
+        setStep(1);
+        return;
+      }
     }
 
     const txHash = await createTransaction(
@@ -272,7 +277,7 @@ const NewTransactionButton = ({
     if (errorToken) {
       toast.error(errorToken.message);
     }
-  }, [errorToken])
+  }, [errorToken]);
 
   return (
     <Dialog

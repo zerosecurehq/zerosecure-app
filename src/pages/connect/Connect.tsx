@@ -80,6 +80,7 @@ const Connect = () => {
     pinnedWallets,
     togglePinnedWallet,
     selectedWallet,
+    setTokens,
   } = useAccount();
   const { getWalletCreated, isProcessing, reset } = useGetWalletCreated();
   const [search, setSearch] = useState<string>("");
@@ -119,6 +120,10 @@ const Connect = () => {
       setFilteredWallets([]);
       setFilteredPinnedWallets([]);
       return;
+    }
+    const oldToken = JSON.parse(localStorage.getItem("token") || "{}");
+    if (Array.isArray(oldToken[publicKey])) {
+      setTokens(oldToken[publicKey]);
     }
     setPublicKey(publicKey);
     fetchWallets();

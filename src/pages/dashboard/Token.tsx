@@ -1,9 +1,6 @@
 import { Table, TableBody, TableCaption } from "@/components/ui/table";
-import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
-import React, { useEffect, useState } from "react";
-import {
-  TokenRecord,
-} from "zerosecurehq-sdk/dist/useGetTokenRecord";
+import React, { useState } from "react";
+import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 import TokenRaw from "./TokenRaw";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -61,22 +58,12 @@ export const fakeTokens: TokenRecord[] = [
 ];
 
 const Token = () => {
-  const { publicKey } = useWallet();
   const [tokenId, setTokenId] = useState("");
   const { tokens, setTokens, removeToken } = useAccount();
 
-  useEffect(() => {
-    if (publicKey) {
-      const oldToken = JSON.parse(localStorage.getItem("token") || "{}");
-      if (Array.isArray(oldToken[publicKey])) {
-        setTokens(oldToken[publicKey]);
-      }
-    }
-  }, [publicKey]);
-
   const handleDelete = (id: string) => {
     removeToken(id);
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +72,7 @@ const Token = () => {
       toast("Token already exists");
       setTokenId("");
       return;
-    };
+    }
     const infoToken = await getTokenMetadata(network, tokenId);
     if (infoToken) {
       setTokens([infoToken]);
@@ -134,7 +121,11 @@ const Token = () => {
             <TableBody>
               {tokens.length > 0 &&
                 tokens.map((item, index) => (
-                  <TokenRaw key={index} token={item} handleDelete={handleDelete} />
+                  <TokenRaw
+                    key={index}
+                    token={item}
+                    handleDelete={handleDelete}
+                  />
                 ))}
             </TableBody>
           </Table>

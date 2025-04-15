@@ -67,6 +67,7 @@ const Page1 = ({
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Select a token</SelectLabel>
+                  <SelectItem value={CREDITS_TOKEN_ID}>Remove token</SelectItem>
                   {tokens.map((token) => (
                     <SelectItem value={token.token_id} key={token.token_id}>
                       {token.name}
@@ -261,7 +262,7 @@ const DepositButton = ({
   const [amount, setAmount] = useState(0);
   const { createDeposit, error, isProcessing, reset, txId } =
     useCreateDeposit();
-  const { selectedWallet, tokens, setTokens } = useAccount();
+  const { selectedWallet } = useAccount();
   const { getCreditsRecord } = useGetCreditsRecord();
   const [typeRecord, setTypeRecord] = useState<"" | "credits" | "token">("");
   const [tokenSelected, setTokenSelected] = useState("");
@@ -278,6 +279,24 @@ const DepositButton = ({
       return;
     }
     if (depositType === "public" && selectedWallet) {
+      if (typeRecord !== "token") {
+        const tokenRecords = await getTokenRecord(tokenSelected);
+        if (!tokenRecords) {
+          setStep(1);
+          toast("Tokens not found");
+          return;
+        }
+
+        const tokenRecord = tokenRecords.find(
+          (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
+        );
+
+        if (!tokenRecord) {
+          toast.error("No enough tokens");
+          setStep(1);
+          return;
+        }
+      }
       const txHash = await createDeposit(
         typeRecord === "token" ? tokenSelected : CREDITS_TOKEN_ID,
         removeVisibleModifier(selectedWallet.data.wallet_address),
@@ -290,10 +309,6 @@ const DepositButton = ({
         setTokenSelected("");
         setTypeRecord("");
         setOpenDeposit(false);
-        const deleteToken = tokens.filter(
-          (item) => item.token_id !== tokenSelected
-        );
-        setTokens(deleteToken);
       }
     } else if (depositType === "private" && selectedWallet) {
       let creditsRecord;
@@ -340,12 +355,6 @@ const DepositButton = ({
         setTokenSelected("");
         setTypeRecord("");
         setOpenDeposit(false);
-        if (typeRecord === "token") {
-          const deleteToken = tokens.filter(
-            (item) => item.token_id !== tokenSelected
-          );
-          setTokens(deleteToken);
-        }
       }
     }
   };

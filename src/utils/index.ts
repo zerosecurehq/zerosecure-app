@@ -1,5 +1,5 @@
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
-import { getMultisigWalletBalance } from "zerosecurehq-sdk";
+import { getMultisigWalletBalance, removeVisibleModifier } from "zerosecurehq-sdk";
 
 export const network = WalletAdapterNetwork.TestnetBeta;
 
@@ -29,9 +29,14 @@ export function microCreditsToCredits(microCredits: number): number {
 
 export const getBalanceMultiWallet = async (
   network: WalletAdapterNetwork,
-  multisigWalletAddress: string
+  multisigWalletAddress: string,
+  tokenId?: string
 ) => {
-  const result = await getMultisigWalletBalance(network, multisigWalletAddress);
+  const result = await getMultisigWalletBalance(
+    network,
+    removeVisibleModifier(multisigWalletAddress),
+    tokenId
+  );
   return isNaN(result) ? 0 : result;
 };
 

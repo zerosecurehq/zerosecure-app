@@ -7,13 +7,8 @@ import {
   Home,
   KeyRound,
 } from "lucide-react";
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import ZeroIcon from "./ZeroIcon";
 import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
@@ -22,7 +17,8 @@ import { Badge } from "../ui/badge";
 import useAccount from "@/stores/useAccount";
 import { formatAleoAddress } from "@/utils";
 import { removeVisibleModifier } from "zerosecurehq-sdk";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 
 const NAVIGATE_PAGES = [
   { name: "Home", icon: Home, href: "/" },
@@ -32,7 +28,8 @@ const NAVIGATE_PAGES = [
 ];
 
 const Header = () => {
-  const { selectedWallet, publicKey, resetWallet } = useAccount();
+  const { publicKey } = useWallet();
+  const { selectedWallet, resetWallet } = useAccount();
   const [open, setOpen] = useState(false);
 
   return (
@@ -68,17 +65,17 @@ const Header = () => {
         ))}
       </div>
       <div className="flex items-center h-full">
-        <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer hover:bg-gray-200">
+        <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer hover:bg-gray-100">
           <Bell />
         </div>
         {selectedWallet && (
-          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200 relative">
+          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-100 relative">
             <div
               className={`w-12 h-12 relative ${selectedWallet?.avatar} rounded-xl`}
             />
             <div className="text-sm flex-1">
               <div className="font-semibold text-center">
-                <Badge>Wallet 1</Badge>
+                <Badge>{"Wallet Name"}</Badge>
               </div>
               <div className="text-sm mt-1 flex items-center justify-between gap-2">
                 <span className="text-gray-600">multisig:</span>
@@ -113,12 +110,20 @@ const Header = () => {
                 </CardHeader>
                 <CardContent className="flex flex-col gap-2">
                   <Link to="/connect" className="w-full">
-                    <Button variant={"outline"} className="w-full">Manage Account</Button>
+                    <Button variant={"outline"} className="w-full">
+                      Manage Account
+                    </Button>
                   </Link>
-                  <Button  variant={"outline"} className="w-full" onClick={() => {
-                    setOpen(false);
-                    resetWallet()
-                  }}>Logout</Button>
+                  <Button
+                    variant={"outline"}
+                    className="w-full"
+                    onClick={() => {
+                      setOpen(false);
+                      resetWallet();
+                    }}
+                  >
+                    Logout
+                  </Button>
                 </CardContent>
               </Card>
             )}

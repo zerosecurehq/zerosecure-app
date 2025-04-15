@@ -20,7 +20,7 @@ const CardWallet = ({
   isPinned: boolean;
   togglePin: () => void;
 }) => {
-  const { setSelectedWallet, selectedWallet, publicKey, wallets } =
+  const { setSelectedWallet, selectedWallet, publicKey } =
     useAccount();
   const [balanceMultiWallet, setBalanceMultiWallet] = useState(0);
   const [walletName, setWalletName] = useState("");
@@ -36,6 +36,7 @@ const CardWallet = ({
         );
         setBalanceMultiWallet(result);
       } catch (error) {
+        console.error(error);
         setBalanceMultiWallet(0);
       }
     };
@@ -57,7 +58,7 @@ const CardWallet = ({
         setWalletName("");
       }
     }
-  }, [publicKey, wallets]);
+  }, [publicKey]);
 
   const handleSaveName = () => {
     if (publicKey && newWalletName) {
