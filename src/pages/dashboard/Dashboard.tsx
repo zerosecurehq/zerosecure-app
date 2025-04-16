@@ -1,25 +1,13 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import Sidebar from "../../components/common/Sidebar";
 import Header from "../../components/common/Header";
 import SidebarProvider from "./../../components/common/SidebarProvider";
 import useAccount from "@/stores/useAccount";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
-import { useEffect } from "react";
-import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 
 const Dashboard = () => {
-  const { selectedWallet, resetAccount } = useAccount();
-  const { publicKey } = useWallet();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!publicKey) {
-      resetAccount();
-      return;
-    }
-    if (!selectedWallet) navigate("/connect");
-  }, [publicKey]);
+  const { selectedWallet, publicKey} = useAccount();
 
   return (
     <section className="min-h-screen w-full mt-16">
@@ -29,7 +17,7 @@ const Dashboard = () => {
           <Sidebar />
         </SidebarProvider> */}
         <div className="flex-1 overflow-y-auto bg-gray-100 mx-auto">
-          {selectedWallet ? (
+          {selectedWallet && publicKey ? (
             <Outlet />
           ) : (
             <div className="flex items-center justify-center h-screen">

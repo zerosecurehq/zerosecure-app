@@ -6,15 +6,14 @@ import useAccount from "@/stores/useAccount";
 import { Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
-import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import { getBalanceMultiWallet, microCreditsToCredits } from "@/utils";
 
 const Home = () => {
-  const { publicKey } = useWallet();
-  const { selectedWallet } = useAccount();
+  const { selectedWallet, publicKey } = useAccount();
   const [balanceMultiWallet, setBalanceMultiWallet] = useState(0);
 
   useEffect(() => {
+    if (!publicKey) return;
     const getBalance = async () => {
       const result = await getBalanceMultiWallet(
         WalletAdapterNetwork.TestnetBeta,
@@ -25,7 +24,7 @@ const Home = () => {
     if (selectedWallet) {
       getBalance();
     }
-  }, [selectedWallet, publicKey]);
+  }, [selectedWallet]);
 
   return (
     <section className="w-full overflow-auto px-28">

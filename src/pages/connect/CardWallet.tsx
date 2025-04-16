@@ -7,6 +7,7 @@ import { Pin, Trash2, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { removeVisibleModifier } from "zerosecurehq-sdk";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 export const ZERO_ADDRESS =
   "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc";
@@ -25,6 +26,7 @@ const CardWallet = ({
   const [walletName, setWalletName] = useState("");
   const [newWalletName, setNewWalletName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getBalance = async () => {
@@ -85,7 +87,10 @@ const CardWallet = ({
           ? "opacity-60"
           : "cursor-pointer bg-white"
       }`}
-      onClick={() => setSelectedWallet(wallet)}
+      onClick={() => {
+        setSelectedWallet(wallet)
+        navigate("/")
+      }}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
