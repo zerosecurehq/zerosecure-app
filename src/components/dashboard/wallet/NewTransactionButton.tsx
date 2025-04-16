@@ -42,11 +42,15 @@ const Page1 = ({
   setAmount,
   setRecipient,
   setTokenSelected,
+  typeRecord,
+  setTypeRecord,
 }: {
   tokens: TokenMetadata[];
   setAmount: (amount: number) => void;
   setRecipient: (address: string) => void;
   setTokenSelected: (token: string) => void;
+  typeRecord: string;
+  setTypeRecord: (type: "credits" | "token") => void;
 }) => {
   return (
     <div className="p-5 space-y-3 border-t border-b border-gray-200">
@@ -55,24 +59,49 @@ const Page1 = ({
           "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
         }
       />
+      <div className="flex- space-y-2">
+        <div>
+          <Label>Type of transfer</Label>
+          <Select
+            onValueChange={(value) => {
+              setTypeRecord(value as "credits" | "token");
+            }}
+            defaultValue={"credits"}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a...." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Select transfer type</SelectLabel>
+                <SelectItem value="credits">Credits</SelectItem>
+                <SelectItem value="token">Token</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       <div>
-        <Label>Select token</Label>
-        <Select onValueChange={(value) => setTokenSelected(value)}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a...." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Select a token</SelectLabel>
-              <SelectItem value={CREDITS_TOKEN_ID}>Remove token</SelectItem>
-              {tokens.map((token) => (
-                <SelectItem value={token.token_id} key={token.token_id}>
-                  {token.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        {typeRecord === "token" && (
+          <>
+            <Label>Select token</Label>
+            <Select onValueChange={(value) => setTokenSelected(value)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a token" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Select a token</SelectLabel>
+                  {tokens.map((token) => (
+                    <SelectItem value={token.token_id} key={token.token_id}>
+                      {token.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </>
+        )}
       </div>
       <div className="flex- space-y-1.5">
         <Label>Recipient address</Label>
@@ -213,42 +242,25 @@ const NewTransactionButton = ({
   className?: string;
 }) => {
   const [step, setStep] = useState(1);
-  const [feeType, setFeeType] = useState<"public" | "private">("public");
+  const [feeType, setFeeType] = useState<"public" | "private">("private");
   const { selectedWallet, tokens } = useAccount();
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState(0);
   const { createTransaction, error, isProcessing, reset, txId } =
-    useCreateTransaction();
-  const [tokenSelected, setTokenSelected] = useState(CREDITS_TOKEN_ID);
+    useCreateTransaction({
+      feePrivate: feeType === "private",
+    });
+  const [tokenSelected, setTokenSelected] = useState("");
+  const [typeRecord, setTypeRecord] = useState<"credits" | "token">("credits");
   const [openTransfer, setOpenTransfer] = useState(false);
-  const { getTokenRecord, error: errorToken } = useGetTokenRecord();
 
   const handleCreateTransaction = async () => {
     if (!selectedWallet) return;
     const { avatar, ...walletWithoutAvatar } = selectedWallet;
 
-    if (tokenSelected !== CREDITS_TOKEN_ID) {
-      const tokenRecords = await getTokenRecord(tokenSelected);
-      if (!tokenRecords) {
-        setStep(1);
-        toast("Tokens not found");
-        return;
-      }
-
-      const tokenRecord = tokenRecords.find(
-        (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
-      );
-
-      if (!tokenRecord) {
-        toast.error("No enough tokens");
-        setStep(1);
-        return;
-      }
-    }
-
     const txHash = await createTransaction(
       walletWithoutAvatar,
-      tokenSelected,
+      typeRecord === "credits" ? CREDITS_TOKEN_ID : tokenSelected,
       recipient,
       creditsToMicroCredits(amount)
     );
@@ -273,17 +285,11 @@ const NewTransactionButton = ({
     }
   }, [error, txId]);
 
-  useEffect(() => {
-    if (errorToken) {
-      toast.error(errorToken.message);
-    }
-  }, [errorToken]);
-
   return (
     <Dialog
       onOpenChange={(value) => {
         setStep(1);
-        setFeeType("public");
+        setFeeType("private");
         setRecipient("");
         setAmount(0);
         reset();
@@ -316,6 +322,8 @@ const NewTransactionButton = ({
                 {
                   1: (
                     <Page1
+                      typeRecord={typeRecord}
+                      setTypeRecord={setTypeRecord}
                       tokens={tokens}
                       setRecipient={setRecipient}
                       setAmount={setAmount}
@@ -358,7 +366,7 @@ const NewTransactionButton = ({
                     >
                       {step === 2 ? (
                         isProcessing ? (
-                          <Loader2 />
+                          <Loader2 className="animate-spin" />
                         ) : (
                           "Transfer"
                         )

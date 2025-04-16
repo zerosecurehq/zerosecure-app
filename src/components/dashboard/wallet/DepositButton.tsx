@@ -45,7 +45,7 @@ const Page1 = ({
 }: {
   setAmount: (amount: number) => void;
   typeRecord: string;
-  setTypeRecord: Dispatch<SetStateAction<"" | "credits" | "token">>;
+  setTypeRecord: Dispatch<SetStateAction<"credits" | "token">>;
   setTokenSelected: (token: string) => void;
 }) => {
   const { tokens } = useAccount();
@@ -56,6 +56,28 @@ const Page1 = ({
           "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
         }
       />
+      <div className="flex- space-y-2">
+        <div>
+          <Label>Type of deposit</Label>
+          <Select
+            onValueChange={(value) => {
+              setTypeRecord(value as "credits" | "token");
+            }}
+            defaultValue={"credits"}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select deposit type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Select deposit type</SelectLabel>
+                <SelectItem value="credits">Credits</SelectItem>
+                <SelectItem value="token">Token</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       <div>
         {typeRecord === "token" && (
           <>
@@ -67,7 +89,6 @@ const Page1 = ({
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Select a token</SelectLabel>
-                  <SelectItem value={CREDITS_TOKEN_ID}>Remove token</SelectItem>
                   {tokens.map((token) => (
                     <SelectItem value={token.token_id} key={token.token_id}>
                       {token.name}
@@ -79,37 +100,14 @@ const Page1 = ({
           </>
         )}
       </div>
-      <div className="flex- space-y-2">
-        <div>
-          <Label>Type of deposit</Label>
-          <Select
-            onValueChange={(value) => {
-              if (value === "" || value === "credits" || value === "token") {
-                setTypeRecord(value);
-              }
-            }}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a...." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Select a...</SelectLabel>
-                <SelectItem value="credits">Credits</SelectItem>
-                <SelectItem value="token">Token</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>Amount</Label>
-          <Input
-            type="number"
-            placeholder="0"
-            onChange={(e) => setAmount(Number(e.target.value))}
-            min={0}
-          />
-        </div>
+      <div>
+        <Label>Amount</Label>
+        <Input
+          type="number"
+          placeholder="0"
+          onChange={(e) => setAmount(Number(e.target.value))}
+          min={0}
+        />
       </div>
     </div>
   );
@@ -255,16 +253,17 @@ const DepositButton = ({
   className?: string;
 }) => {
   const [step, setStep] = useState(1);
-  const [feeType, setFeeType] = useState<"public" | "private">("public");
+  const [feeType, setFeeType] = useState<"public" | "private">("private");
   const [depositType, setDepositType] = useState<"public" | "private">(
-    "public"
+    "private"
   );
   const [amount, setAmount] = useState(0);
-  const { createDeposit, error, isProcessing, reset, txId } =
-    useCreateDeposit();
+  const { createDeposit, error, isProcessing, reset, txId } = useCreateDeposit({
+    feePrivate: feeType === "private",
+  });
   const { selectedWallet } = useAccount();
   const { getCreditsRecord } = useGetCreditsRecord();
-  const [typeRecord, setTypeRecord] = useState<"" | "credits" | "token">("");
+  const [typeRecord, setTypeRecord] = useState<"credits" | "token">("credits");
   const [tokenSelected, setTokenSelected] = useState("");
   const [openDeposit, setOpenDeposit] = useState(false);
   const {
@@ -279,26 +278,8 @@ const DepositButton = ({
       return;
     }
     if (depositType === "public" && selectedWallet) {
-      if (typeRecord !== "token") {
-        const tokenRecords = await getTokenRecord(tokenSelected);
-        if (!tokenRecords) {
-          setStep(1);
-          toast("Tokens not found");
-          return;
-        }
-
-        const tokenRecord = tokenRecords.find(
-          (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
-        );
-
-        if (!tokenRecord) {
-          toast.error("No enough tokens");
-          setStep(1);
-          return;
-        }
-      }
       const txHash = await createDeposit(
-        typeRecord === "token" ? tokenSelected : CREDITS_TOKEN_ID,
+        typeRecord === "credits" ? CREDITS_TOKEN_ID : tokenSelected,
         removeVisibleModifier(selectedWallet.data.wallet_address),
         creditsToMicroCredits(amount)
       );
@@ -307,7 +288,7 @@ const DepositButton = ({
         toast("Desposit successful");
         setAmount(0);
         setTokenSelected("");
-        setTypeRecord("");
+        setTypeRecord("credits");
         setOpenDeposit(false);
       }
     } else if (depositType === "private" && selectedWallet) {
@@ -315,31 +296,27 @@ const DepositButton = ({
       let tokenRecord;
       if (typeRecord === "credits") {
         const record = await getCreditsRecord();
-        if (!record) return;
+        if (!record) return toast("Credits record not found");
         creditsRecord = record.find(
           (item) =>
             microCreditsToCredits(parseInt(item.data.microcredits)) >= amount
         );
         if (!creditsRecord) {
           setStep(1);
-          toast.error("No enough credits");
-          return;
+          return toast.error("Not enough private credits");
         }
-      }
-      if (typeRecord === "token") {
+      } else if (typeRecord === "token") {
         const tokenRecords = await getTokenRecord(tokenSelected);
         if (!tokenRecords) {
           setStep(1);
-          toast("Tokens not found");
-          return;
+          return toast("Tokens not found");
         }
         tokenRecord = tokenRecords.find(
           (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
         );
         if (!tokenRecord) {
           setStep(1);
-          toast.error("No enough tokens");
-          return;
+          return toast.error("No enough tokens");
         }
       }
       const txHash = await createDeposit(
@@ -353,7 +330,7 @@ const DepositButton = ({
         toast("Desposit successful");
         setAmount(0);
         setTokenSelected("");
-        setTypeRecord("");
+        setTypeRecord("credits");
         setOpenDeposit(false);
       }
     }
@@ -376,14 +353,16 @@ const DepositButton = ({
     }
   }, [error, txId]);
 
+  console.log("depositType", depositType);
+
   return (
     <Dialog
       onOpenChange={(value) => {
         setOpenDeposit(value);
         setStep(1);
         setAmount(0);
-        setDepositType("public");
-        setFeeType("public");
+        setDepositType("private");
+        setFeeType("private");
         setTokenSelected("");
         reset();
       }}
@@ -443,15 +422,8 @@ const DepositButton = ({
                           return;
                         }
                         if (step === 1) {
-                          if (typeRecord === "" && amount <= 0) {
+                          if (amount <= 0) {
                             toast("Please enter an amount greater than 0");
-                            return;
-                          }
-                          if (
-                            (typeRecord === "token" && tokenSelected === "") ||
-                            amount <= 0
-                          ) {
-                            toast("Please select a token and enter an amount");
                             return;
                           }
                         }
