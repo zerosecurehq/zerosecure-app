@@ -49,9 +49,7 @@ const CardWallet = ({
       try {
         const nameParser = JSON.parse(localStorage.getItem("name") || "{}");
         const name =
-          nameParser[removeVisibleModifier(wallet?.data.wallet_address || "")][
-            publicKey
-          ];
+          nameParser[removeVisibleModifier(wallet.data.wallet_address)];
         if (name) setWalletName(name);
         else setWalletName("");
       } catch (error) {
@@ -64,11 +62,8 @@ const CardWallet = ({
   const handleSaveName = () => {
     if (publicKey && newWalletName) {
       const nameParser = JSON.parse(localStorage.getItem("name") || "{}");
-      nameParser[
-        removeVisibleModifier(selectedWallet?.data.wallet_address || "")
-      ] = {
-        [publicKey]: newWalletName,
-      };
+      nameParser[removeVisibleModifier(wallet.data.wallet_address)] =
+        newWalletName;
       localStorage.setItem("name", JSON.stringify(nameParser));
       setWalletName(newWalletName);
       setIsDialogOpen(false);
@@ -88,11 +83,14 @@ const CardWallet = ({
           : "cursor-pointer bg-white"
       }`}
       onClick={() => {
-        setSelectedWallet(wallet)
-        navigate("/")
+        setSelectedWallet(wallet);
+        navigate("/");
       }}
     >
-      <div className="flex items-center justify-between">
+      <div
+        onClick={() => setSelectedWallet(wallet)}
+        className="flex items-center justify-between z-0"
+      >
         <div className="flex items-center gap-4">
           <div className={`h-12 w-12 rounded-lg ${wallet?.avatar}`} />
           <div className="flex flex-col">
@@ -107,7 +105,7 @@ const CardWallet = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 z-10">
           <Badge
             onClick={(e) => {
               e.stopPropagation();

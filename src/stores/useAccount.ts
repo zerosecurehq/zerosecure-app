@@ -84,7 +84,14 @@ const useAccount = create<AccountState>((set) => ({
       selectedWallet: null,
     }),
 
-  resetWallet: () => set({ selectedWallet: null }),
+  resetWallet: () => {
+    // remove selected wallet from local storage
+    set((state) => {
+      if (!state.publicKey) return {};
+      updateStoredAccountIntoLocal(state.publicKey, { selectedWallet: null });
+      return { selectedWallet: null };
+    });
+  },
 }));
 
 export default useAccount;

@@ -17,7 +17,7 @@ import { Badge } from "../ui/badge";
 import useAccount from "@/stores/useAccount";
 import { formatAleoAddress } from "@/utils";
 import { removeVisibleModifier } from "zerosecurehq-sdk";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 
 const NAVIGATE_PAGES = [
@@ -31,6 +31,12 @@ const Header = () => {
   const { publicKey } = useWallet();
   const { selectedWallet, resetWallet } = useAccount();
   const [open, setOpen] = useState(false);
+
+  let walletName = localStorage.getItem("name") || "{}";
+  walletName =
+    JSON.parse(walletName)[
+      removeVisibleModifier(selectedWallet?.data.wallet_address || "")
+    ];
 
   return (
     <header className="bg-white border-b-gray-200 border-b flex items-center justify-between fixed top-0 left-0 w-full h-16 z-20">
@@ -69,13 +75,16 @@ const Header = () => {
           <Bell />
         </div>
         {selectedWallet && (
-          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-100 relative">
+          <div
+            onClick={() => setOpen(!open)}
+            className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-100 relative"
+          >
             <div
               className={`w-12 h-12 relative ${selectedWallet?.avatar} rounded-xl`}
             />
             <div className="text-sm flex-1">
               <div className="font-semibold text-center">
-                <Badge>{"Wallet Name"}</Badge>
+                <Badge>{walletName}</Badge>
               </div>
               <div className="text-sm mt-1 flex items-center justify-between gap-2">
                 <span className="text-gray-600">multisig:</span>
@@ -88,20 +97,10 @@ const Header = () => {
             </div>
             {open ? (
               <>
-                <ChevronDown
-                  size={20}
-                  onClick={() => {
-                    setOpen(false);
-                  }}
-                />
+                <ChevronDown size={20} />
               </>
             ) : (
-              <ChevronUp
-                size={20}
-                onClick={() => {
-                  setOpen(true);
-                }}
-              />
+              <ChevronUp size={20} />
             )}
             {open && (
               <Card className="absolute top-full right-0 mt-2 w-full">
@@ -116,7 +115,7 @@ const Header = () => {
                   </Link>
                   <Button
                     variant={"outline"}
-                    className="w-full"
+                    className="w-full text-red-500 hover:text-red-700"
                     onClick={() => {
                       setOpen(false);
                       resetWallet();
