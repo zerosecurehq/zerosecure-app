@@ -423,7 +423,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                         <div className="w-1/3">Name</div>
                         <div className="w-2/3">
                           <div className="font-semibold">
-                            Affectionate Ethereum Safe
+                            {walletName.trim()}
                           </div>
                         </div>
                       </div>

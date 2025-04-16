@@ -330,22 +330,31 @@ const Connect = () => {
                     ))}
                 </>
               ) : (
-                <p className="font-bold text-center">Not found</p>
+                ""
               )}
             </div>
 
             {/* Connect Wallet */}
-            {filteredWallets.length === 0 && (
-              <div className="text-center py-6 space-y-4">
-                <p>
-                  Connect a wallet to view your Safe Accounts or to create a new
-                  one
-                </p>
-                <Button className="flex items-center gap-2 mx-auto">
-                  <Wallet size={16} /> Connect a wallet
-                </Button>
-              </div>
-            )}
+            {filteredWallets.length === 0 &&
+              (!publicKey ? (
+                <div className="text-center space-y-4">
+                  <p className="text-gray-500">
+                    Connect your wallet to view and manage your accounts.
+                  </p>
+                  {/* <Button className="flex items-center gap-2 mx-auto">
+                    <Wallet size={16} /> Connect a wallet
+                  </Button> */}
+                </div>
+              ) : (
+                <div>
+                  <p className="font-bold text-center">
+                    There was no multisig wallet found.
+                  </p>
+                  <p className="text-center text-gray-500 py-2">
+                    Create a new multisig wallet to get started.
+                  </p>
+                </div>
+              ))}
           </div>
 
           {/* Import Safe */}
