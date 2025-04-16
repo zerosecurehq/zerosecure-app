@@ -9,18 +9,20 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   ConfirmTransferTicketRecord,
+  CREDITS_TOKEN_ID,
   getCurrentTransactionConfirmations,
+  removeContractDataType,
   removeVisibleModifier,
   useApplyConfirmTransferTicket,
 } from "zerosecurehq-sdk";
 
-interface SigningRawProps {
+interface SigningRowProps {
   data: ConfirmTransferTicketRecord;
   getSigning: () => void;
   setSigning: Dispatch<SetStateAction<ConfirmTransferTicketRecord[]>>;
 }
 
-const SigningRaw = ({ data, getSigning, setSigning }: SigningRawProps) => {
+const SigningRow = ({ data, getSigning, setSigning }: SigningRowProps) => {
   const {
     applyConfirmTransferTicket,
     error,
@@ -57,31 +59,40 @@ const SigningRaw = ({ data, getSigning, setSigning }: SigningRawProps) => {
     dataConfirm: ConfirmTransferTicketRecord
   ) => {
     const txHash = await applyConfirmTransferTicket(dataConfirm);
-    const signed = JSON.parse(
-      localStorage.getItem("signedTransactions") || "[]"
-    );
-    if (!signed.includes(dataConfirm.id)) {
-      signed.push(dataConfirm.id);
-      localStorage.setItem("signedTransactions", JSON.stringify(signed));
-    }
-    setSigning((state) =>
-      state.filter(
-        (item) => item.data.wallet_address !== dataConfirm.data.wallet_address
-      )
-    );
     if (txHash) {
       resetConfirm();
       getSigning();
       toast("Transaction signed successfully");
+
+      // cache signed transaction in local storage to avoid signing again
+      const signed = JSON.parse(
+        localStorage.getItem("signedTransactions") || "[]"
+      );
+      if (!signed.includes(dataConfirm.id)) {
+        signed.push(dataConfirm.id);
+        localStorage.setItem("signedTransactions", JSON.stringify(signed));
+      }
+      setSigning((state) =>
+        state.filter(
+          (item) => item.data.wallet_address !== dataConfirm.data.wallet_address
+        )
+      );
     }
   };
+
+  let isCreditsTransaction =
+    //@ts-ignore
+    removeVisibleModifier(data.data.token_id) === CREDITS_TOKEN_ID;
 
   return (
     <TableRow className="text-center relative cursor-pointer">
       <TableCell className="font-medium">
-        {formatAleoAddress(data.data.to)}
+        {formatAleoAddress(removeVisibleModifier(data.data.to))}
       </TableCell>
-      <TableCell>{removeVisibleModifier(data.data.amount)}</TableCell>
+      <TableCell>
+        {removeVisibleModifier(removeContractDataType(data.data.amount))}{" "}
+        {isCreditsTransaction ? "credits" : "tokens"}
+      </TableCell>
       <TableCell>
         {/* @TODO (need backend) transaction creation time cant not be obtained from local wallet, will need database for it*/}
         {new Date(Date.now()).toLocaleString()}
@@ -110,4 +121,4 @@ const SigningRaw = ({ data, getSigning, setSigning }: SigningRawProps) => {
   );
 };
 
-export default SigningRaw;
+export default SigningRow;

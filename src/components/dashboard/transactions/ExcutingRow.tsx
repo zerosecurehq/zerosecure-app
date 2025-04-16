@@ -8,18 +8,20 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
+  CREDITS_TOKEN_ID,
   ExecuteTicketRecord,
   getCurrentTransactionConfirmations,
+  removeContractDataType,
   removeVisibleModifier,
   useApplyExecuteTicket,
 } from "zerosecurehq-sdk";
 
-interface ExcutingRawProps {
+interface ExcutingRowProps {
   data: ExecuteTicketRecord;
   getExcute: () => void;
 }
 
-const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
+const ExcutingRow = ({ data, getExcute }: ExcutingRowProps) => {
   const {
     applyExecuteTicket,
     error,
@@ -61,12 +63,18 @@ const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
     }
   };
 
+  let isCreditsTransaction =
+    removeVisibleModifier(data.data.token_id) === CREDITS_TOKEN_ID;
+
   return (
     <TableRow className="text-center relative cursor-pointer">
       <TableCell className="font-medium">
-        {formatAleoAddress(data.data.to)}
+        {formatAleoAddress(removeVisibleModifier(data.data.to))}
       </TableCell>
-      <TableCell>{removeVisibleModifier(data.data.amount)}</TableCell>
+      <TableCell>
+        {removeVisibleModifier(removeContractDataType(data.data.amount))}{" "}
+        {isCreditsTransaction ? "credits" : "tokens"}
+      </TableCell>
       <TableCell>
         {/* @TODO (need backend) transaction creation time cant not be obtained from local wallet, will need database for it*/}
         {new Date(Date.now()).toLocaleString()}
@@ -80,7 +88,7 @@ const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
           {isProcessing ? <Loader2 className="animate-spin" /> : "Excute"}
         </Button>
       </TableCell>{" "}
-      {confirmed !==
+      {confirmed <
       parseInt((selectedWallet?.data.threshold || "0").toString()) ? (
         <Badge
           variant={"outline"}
@@ -104,4 +112,4 @@ const ExcutingRaw = ({ data, getExcute }: ExcutingRawProps) => {
   );
 };
 
-export default ExcutingRaw;
+export default ExcutingRow;

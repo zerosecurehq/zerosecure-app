@@ -5,7 +5,7 @@ import {
   ConfirmTransferTicketRecord,
   useGetConfirmTransferTicket,
 } from "zerosecurehq-sdk";
-import SigningRaw from "./SigningRaw";
+import SigningRow from "./SigningRow";
 import { toast } from "sonner";
 import RawSkeleton from "./RawSkeleton";
 
@@ -20,8 +20,12 @@ const Signing = () => {
     // how: when user successfully signed transaction, we should mark it as signed in the local storage
     const confirmTickets = await getConfirmTransferTicket();
     if (confirmTickets !== void 0) {
-      const signed = JSON.parse(localStorage.getItem("signedTransactions") || "[]");
-      const filtered = confirmTickets.filter((item) => !signed.includes(item.id));
+      const signed = JSON.parse(
+        localStorage.getItem("signedTransactions") || "[]"
+      );
+      const filtered = confirmTickets.filter(
+        (item) => !signed.includes(item.id)
+      );
       setSigning(filtered);
     }
   };
@@ -49,7 +53,12 @@ const Signing = () => {
           {isProcessing && <RawSkeleton />}
           {signing.length > 0 &&
             signing.map((item, index) => (
-              <SigningRaw setSigning={setSigning} key={index} data={item} getSigning={getSigning} />
+              <SigningRow
+                setSigning={setSigning}
+                key={index}
+                data={item}
+                getSigning={getSigning}
+              />
             ))}
         </TableBody>
       </Table>

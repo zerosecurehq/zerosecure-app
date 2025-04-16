@@ -2,7 +2,7 @@ import { Table, TableBody, TableCaption } from "@/components/ui/table";
 import { ExecuteTicketRecord, useGetExecuteTicket } from "zerosecurehq-sdk";
 import { useEffect, useState } from "react";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
-import ExcutingRaw from "./ExcutingRaw";
+import ExcutingRow from "./ExcutingRow";
 import { toast } from "sonner";
 import RawSkeleton from "./RawSkeleton";
 
@@ -90,7 +90,7 @@ const Signing = () => {
           {isProcessing && <RawSkeleton />}
           {excute.length > 0 &&
             excute.map((item, index) => (
-              <ExcutingRaw key={index} data={item} getExcute={getExcute} />
+              <ExcutingRow key={index} data={item} getExcute={getExcute} />
             ))}
         </TableBody>
       </Table>
