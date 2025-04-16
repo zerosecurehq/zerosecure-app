@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import useAccount, { WalletRecordData } from "@/stores/useAccount";
+import useAccount, { ExtendedWalletRecord } from "@/stores/useAccount";
 import { formatAleoAddress, getBalanceMultiWallet } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Pin, Trash2, MoreHorizontal } from "lucide-react";
@@ -16,12 +16,11 @@ const CardWallet = ({
   isPinned,
   togglePin,
 }: {
-  wallet: WalletRecordData;
+  wallet: ExtendedWalletRecord;
   isPinned: boolean;
   togglePin: () => void;
 }) => {
-  const { setSelectedWallet, selectedWallet, publicKey } =
-    useAccount();
+  const { setSelectedWallet, selectedWallet, publicKey } = useAccount();
   const [balanceMultiWallet, setBalanceMultiWallet] = useState(0);
   const [walletName, setWalletName] = useState("");
   const [newWalletName, setNewWalletName] = useState("");
@@ -75,7 +74,7 @@ const CardWallet = ({
   };
 
   const numberOfSigners = wallet.data.owners.filter(
-    (owner) => removeVisibleModifier(owner) !== ZERO_ADDRESS
+    (owner: string) => removeVisibleModifier(owner) !== ZERO_ADDRESS
   ).length;
 
   return (

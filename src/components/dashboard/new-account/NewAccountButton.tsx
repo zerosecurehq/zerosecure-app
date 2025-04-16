@@ -41,8 +41,8 @@ import {
 } from "zerosecurehq-sdk";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import useAccount, { getRandomGradient } from "@/stores/useAccount";
-import { formatAleoAddress } from "@/utils";
+import useAccount from "@/stores/useAccount";
+import { formatAleoAddress, getRandomGradient } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 
 interface Signer {

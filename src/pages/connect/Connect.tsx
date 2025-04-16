@@ -1,15 +1,15 @@
 import Header from "@/components/common/Header";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Wallet, Pin, Bookmark } from "lucide-react";
+import { Pin, Bookmark } from "lucide-react";
 import NewAccountButton from "@/components/dashboard/new-account/NewAccountButton";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
-import useAccount, { WalletRecordData } from "@/stores/useAccount";
+import useAccount, { ExtendedWalletRecord } from "@/stores/useAccount";
 import CardWallet from "./CardWallet";
 import { removeVisibleModifier, useGetWalletCreated } from "zerosecurehq-sdk";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import CardWalletSkeleton from "./CardWalletSkeleton";
+import useToken, { TOKEN_LOCAL_KEY } from "@/stores/useToken";
 
 // const dataTest: WalletRecordData[] = [
 //   {
@@ -80,15 +80,16 @@ const Connect = () => {
     pinnedWallets,
     togglePinnedWallet,
     selectedWallet,
-    setTokens,
   } = useAccount();
+  const { addTokens, setWalletAddressToGetToken, walletAddressToGetToken } =
+    useToken();
   const { getWalletCreated, isProcessing, reset } = useGetWalletCreated();
   const [search, setSearch] = useState<string>("");
-  const [filteredWallets, setFilteredWallets] = useState<WalletRecordData[]>(
-    []
-  );
+  const [filteredWallets, setFilteredWallets] = useState<
+    ExtendedWalletRecord[]
+  >([]);
   const [filteredPinnedWallets, setFilteredPinnedWallets] = useState<
-    WalletRecordData[]
+    ExtendedWalletRecord[]
   >([]);
 
   const selectedInSearch = (() => {
@@ -121,13 +122,28 @@ const Connect = () => {
       setFilteredPinnedWallets([]);
       return;
     }
-    const oldToken = JSON.parse(localStorage.getItem("token") || "{}");
-    if (Array.isArray(oldToken[publicKey])) {
-      setTokens(oldToken[publicKey]);
-    }
     setPublicKey(publicKey);
     fetchWallets();
   }, [publicKey]);
+
+  useEffect(() => {
+    if (selectedWallet) {
+      setWalletAddressToGetToken(
+        removeVisibleModifier(selectedWallet.data.wallet_address)
+      );
+    }
+  }, [selectedWallet]);
+
+  useEffect(() => {
+    if (walletAddressToGetToken) {
+      const localTokenObject = JSON.parse(
+        localStorage.getItem(TOKEN_LOCAL_KEY) || "{}"
+      );
+      if (Array.isArray(localTokenObject[walletAddressToGetToken])) {
+        addTokens(localTokenObject[walletAddressToGetToken]);
+      }
+    }
+  }, [walletAddressToGetToken]);
 
   useEffect(() => {
     if (!publicKey) {

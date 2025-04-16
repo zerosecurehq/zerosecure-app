@@ -1,7 +1,40 @@
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
-import { getMultisigWalletBalance, removeVisibleModifier } from "zerosecurehq-sdk";
+import {
+  getMultisigWalletBalance,
+  removeVisibleModifier,
+} from "zerosecurehq-sdk";
 
 export const network = WalletAdapterNetwork.TestnetBeta;
+
+const gradients = [
+  "bg-gradient-to-r from-pink-500 to-yellow-500",
+  "bg-gradient-to-r from-purple-500 to-indigo-500",
+  "bg-gradient-to-r from-blue-500 to-teal-400",
+  "bg-gradient-to-r from-green-400 to-blue-500",
+  "bg-gradient-to-r from-red-400 to-pink-400",
+  "bg-gradient-to-r from-yellow-400 to-red-500",
+  "bg-gradient-to-r from-cyan-400 to-blue-600",
+  "bg-gradient-to-r from-emerald-400 to-lime-500",
+  "bg-gradient-to-r from-indigo-500 to-purple-600",
+  "bg-gradient-to-r from-rose-400 to-fuchsia-500",
+  "bg-gradient-to-r from-orange-400 to-amber-500",
+  "bg-gradient-to-r from-teal-400 to-cyan-500",
+  "bg-gradient-to-r from-blue-400 to-violet-500",
+  "bg-gradient-to-r from-lime-400 to-green-500",
+  "bg-gradient-to-r from-fuchsia-400 to-rose-500",
+  "bg-gradient-to-r from-amber-400 to-yellow-500",
+  "bg-gradient-to-r from-sky-400 to-blue-500",
+  "bg-gradient-to-r from-purple-400 to-pink-500",
+  "bg-gradient-to-r from-green-500 to-teal-500",
+  "bg-gradient-to-r from-pink-400 to-red-500",
+  "bg-gradient-to-r from-indigo-400 to-blue-500",
+  "bg-gradient-to-r from-teal-300 to-green-400",
+  "bg-gradient-to-r from-yellow-300 to-orange-400",
+  "bg-gradient-to-r from-blue-300 to-indigo-400",
+];
+
+export const getRandomGradient = () =>
+  gradients[Math.floor(Math.random() * gradients.length)];
 
 export function convertKey(input: string): string {
   if (input.length <= 8) return input;
@@ -79,3 +112,5 @@ export const getRemovedOwners = (
 export const enoughComfirm = (confirmed: string, request: string): boolean => {
   return parseInt(confirmed) >= parseInt(request);
 };
+
+export * from "./storage";

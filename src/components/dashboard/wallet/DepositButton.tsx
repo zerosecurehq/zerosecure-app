@@ -22,7 +22,7 @@ import {
 
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
-import useAccount, { WalletRecordData } from "@/stores/useAccount";
+import useAccount, { ExtendedWalletRecord } from "@/stores/useAccount";
 import {
   creditsToMicroCredits,
   formatAleoAddress,
@@ -36,6 +36,7 @@ import {
 } from "zerosecurehq-sdk";
 import { Loader2 } from "lucide-react";
 import { useGetTokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
+import useToken from "@/stores/useToken";
 
 const Page1 = ({
   setAmount,
@@ -48,7 +49,7 @@ const Page1 = ({
   setTypeRecord: Dispatch<SetStateAction<"credits" | "token">>;
   setTokenSelected: (token: string) => void;
 }) => {
-  const { tokens } = useAccount();
+  const { tokens } = useToken();
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
       <Warning
@@ -126,7 +127,7 @@ const Page2 = ({
   depositType: "public" | "private";
   setDepositType: (type: "public" | "private") => void;
   amount: number;
-  selectedWallet: WalletRecordData;
+  selectedWallet: ExtendedWalletRecord;
 }) => {
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">

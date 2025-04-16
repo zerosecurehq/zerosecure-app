@@ -21,11 +21,7 @@ import {
 import { toast } from "sonner";
 import useAccount from "@/stores/useAccount";
 import { Loader2 } from "lucide-react";
-import {
-  creditsToMicroCredits,
-  formatAleoAddress,
-  microCreditsToCredits,
-} from "@/utils";
+import { creditsToMicroCredits, formatAleoAddress } from "@/utils";
 import {
   Select,
   SelectContent,
@@ -35,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetTokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
+import useToken from "@/stores/useToken";
 
 const Page1 = ({
   tokens,
@@ -243,7 +239,8 @@ const NewTransactionButton = ({
 }) => {
   const [step, setStep] = useState(1);
   const [feeType, setFeeType] = useState<"public" | "private">("private");
-  const { selectedWallet, tokens } = useAccount();
+  const { selectedWallet } = useAccount();
+  const { tokens } = useToken();
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState(0);
   const { createTransaction, error, isProcessing, reset, txId } =

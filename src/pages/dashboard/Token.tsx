@@ -4,12 +4,12 @@ import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 import TokenRaw from "./TokenRaw";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import useAccount from "@/stores/useAccount";
 import { Card, CardContent } from "@/components/ui/card";
 import Warning from "@/components/ui/Warning";
 import { getTokenMetadata } from "zerosecurehq-sdk";
 import { network } from "@/utils";
 import { toast } from "sonner";
+import useToken from "@/stores/useToken";
 
 export const fakeTokens: TokenRecord[] = [
   {
@@ -59,7 +59,7 @@ export const fakeTokens: TokenRecord[] = [
 
 const Token = () => {
   const [tokenId, setTokenId] = useState("");
-  const { tokens, setTokens, removeToken } = useAccount();
+  const { tokens, addTokens, removeToken } = useToken();
 
   const handleDelete = (id: string) => {
     removeToken(id);
@@ -75,7 +75,7 @@ const Token = () => {
     }
     const infoToken = await getTokenMetadata(network, tokenId);
     if (infoToken) {
-      setTokens([infoToken]);
+      addTokens([infoToken]);
       setTokenId("");
     }
   };
@@ -107,17 +107,14 @@ const Token = () => {
               type="submit"
               disabled={!tokenId.trim()}
             >
-              Enter
+              Add
             </Button>
             {/* <Button variant={"outline"} type="submit" disabled={!tokenId.trim()}>
               See balance
             </Button> */}
           </form>
 
-          <Table>
-            <TableCaption className="caption-top text-sm">
-              Your token transactions will be listed here.
-            </TableCaption>
+          <Table className="mt-2">
             <TableBody>
               {tokens.length > 0 &&
                 tokens.map((item, index) => (
