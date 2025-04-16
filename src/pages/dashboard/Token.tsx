@@ -1,7 +1,6 @@
-import { Table, TableBody, TableCaption } from "@/components/ui/table";
+import { Table, TableBody } from "@/components/ui/table";
 import React, { useState } from "react";
 import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
-import TokenRaw from "./TokenRaw";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { getTokenMetadata } from "zerosecurehq-sdk";
 import { network } from "@/utils";
 import { toast } from "sonner";
 import useToken from "@/stores/useToken";
+import TokenRow from "@/components/dashboard/token/TokenRow";
 
 export const fakeTokens: TokenRecord[] = [
   {
@@ -118,7 +118,7 @@ const Token = () => {
             <TableBody>
               {tokens.length > 0 &&
                 tokens.map((item, index) => (
-                  <TokenRaw
+                  <TokenRow
                     key={index}
                     token={item}
                     handleDelete={handleDelete}

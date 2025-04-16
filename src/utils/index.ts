@@ -52,6 +52,14 @@ export function formatAleoAddress(address: string): string {
   return `${firstPart}...${lastPart}`;
 }
 
+export function formatField(field: string, partLength: number = 4): string {
+  let newField = field.replace(/field/g, "");
+  if (newField.length <= partLength * 2) return newField;
+  let firstPart = newField.slice(0, partLength);
+  let lastPart = newField.slice(-partLength);
+  return `${firstPart}...${lastPart}field`;
+}
+
 export function creditsToMicroCredits(credits: number): number {
   return credits * 1_000_000;
 }
