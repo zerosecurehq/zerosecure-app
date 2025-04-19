@@ -37,8 +37,7 @@ const GovernanceRow = ({
       <TableCell className="text-center">
         {data.name?.trim() ? data.name : "No name"}
       </TableCell>
-      {/* @TODO: vertically center the address  */}
-      <TableCell className="flex items-center">
+      <TableCell className="text-left">
         {removeVisibleModifier(data.address)}
       </TableCell>
       <TableCell>
