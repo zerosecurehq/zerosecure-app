@@ -18,22 +18,22 @@ const App = () => {
   const wallets = useMemo(
     () => [
       new LeoWalletAdapter({
-        appName: "Aleo app",
+        appName: "ZeroSecure",
       }),
       new PuzzleWalletAdapter({
         programIdPermissions: {
           [WalletAdapterNetwork.MainnetBeta]: [...ALL_PROGRAM_IDS],
           [WalletAdapterNetwork.TestnetBeta]: [...ALL_PROGRAM_IDS],
         },
-        appName: "Aleo app",
-        appDescription: "A privacy-focused DeFi app",
+        appName: "ZeroSecure",
+        appDescription: "Securing the future of digital assets.",
         appIconUrl: "",
       }),
       new FoxWalletAdapter({
-        appName: "Aleo app",
+        appName: "ZeroSecure",
       }),
       new SoterWalletAdapter({
-        appName: "Aleo app",
+        appName: "ZeroSecure",
       }),
     ],
     []
@@ -44,7 +44,6 @@ const App = () => {
       wallets={wallets}
       decryptPermission={DecryptPermission.OnChainHistory}
       network={WalletAdapterNetwork.TestnetBeta}
-      programs={["zerosecure.aleo, credits.aleo, aleo_multisig_v5.aleo"]}
       autoConnect
     >
       <WalletModalProvider>

@@ -54,7 +54,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
   const { publicKey } = useWallet();
   const DEFAULT_SIGNER = {
     name: "Me",
-    address: removeVisibleModifier(publicKey as string),
+    address: publicKey ? removeVisibleModifier(publicKey as string) : "",
   };
   const [currentStep, setCurrentStep] = useState(1);
   const { setWallets, setSelectedWallet } = useAccount();
@@ -129,7 +129,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
         setCurrentStep(1);
       }
     } catch (error) {
-      console.log(`Error in createMultiWallet: ${error}`);
+      toast(`${error}`);
     }
   };
 
