@@ -1,7 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import useAccount, { ExtendedWalletRecord } from "@/stores/useAccount";
-import { formatAleoAddress, getBalanceMultiWallet } from "@/utils";
+import {
+  convertAddressToZeroSecureAddress,
+  formatAleoAddress,
+  getBalanceMultiWallet,
+  microCreditsToCredits,
+} from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Pin, Trash2, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -96,11 +101,13 @@ const CardWallet = ({
           <div className="flex flex-col">
             <span className="font-semibold text-gray-900">
               {formatAleoAddress(
-                removeVisibleModifier(wallet.data.wallet_address)
+                convertAddressToZeroSecureAddress(
+                  removeVisibleModifier(wallet.data.wallet_address)
+                )
               )}
             </span>
             <p className="text-gray-500 text-sm text-left">
-              ${balanceMultiWallet}
+              {microCreditsToCredits(balanceMultiWallet).toFixed(2)} Credits
             </p>
           </div>
         </div>

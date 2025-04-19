@@ -50,11 +50,6 @@ const Page1 = ({
 }) => {
   return (
     <div className="p-5 space-y-3 border-t border-b border-gray-200">
-      <Warning
-        msg={
-          "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
-        }
-      />
       <div className="flex- space-y-2">
         <div>
           <Label>Type of transfer</Label>
@@ -132,11 +127,6 @@ const Page2 = ({
 }) => {
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
-      <Warning
-        msg={
-          "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
-        }
-      />
       <div className="w-full flex justify-center items-center ">
         <div className="p-1 rounded-md text-3xl">
           {" "}

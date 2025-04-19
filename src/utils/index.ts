@@ -1,3 +1,4 @@
+export * from "./storage";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import {
   getMultisigWalletBalance,
@@ -50,6 +51,10 @@ export function formatAleoAddress(address: string): string {
   const lastPart = address.slice(-5);
 
   return `${firstPart}...${lastPart}`;
+}
+
+export function convertAddressToZeroSecureAddress(address: string): string {
+  return address.replace(/aleo1/g, "zero1");
 }
 
 export function formatField(field: string, partLength: number = 4): string {
@@ -120,5 +125,3 @@ export const getRemovedOwners = (
 export const enoughComfirm = (confirmed: string, request: string): boolean => {
   return parseInt(confirmed) >= parseInt(request);
 };
-
-export * from "./storage";

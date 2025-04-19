@@ -11,13 +11,7 @@ import GovernanceList from "@/components/dashboard/transactions/GovernanceList";
 const Transactions = () => {
   return (
     <section className="bg-gray-100 w-full px-28">
-      <div className="p-4">
-        <Warning
-          msg={
-            "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
-          }
-        />
-      </div>
+      <div className="p-4"></div>
       <div className="pt-6 pl-6 pr-6">
         <h2 className="font-bold text-4xl mb-3">Transactions</h2>
         <Tabs defaultValue="signing">

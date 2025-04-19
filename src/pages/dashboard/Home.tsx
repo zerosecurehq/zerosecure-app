@@ -28,13 +28,7 @@ const Home = () => {
 
   return (
     <section className="w-full overflow-auto px-28">
-      <div className="p-4">
-        <Warning
-          msg={
-            "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
-          }
-        />
-      </div>
+      <div className="p-4"></div>
       <div className="grid grid-cols-3 gap-3 p-4">
         <Card className="p-6 col-span-2">
           <CardContent className="flex items-center justify-between p-0">

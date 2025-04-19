@@ -82,13 +82,7 @@ const Token = () => {
 
   return (
     <section className="w-full overflow-auto px-28">
-      <div className="py-4">
-        <Warning
-          msg={
-            "Do not directly send aleo credits to multisig address because it is virtual and not exit in the blockchain."
-          }
-        />
-      </div>
+      <div className="py-4"></div>
 
       <Card>
         <CardContent className="pt-6">

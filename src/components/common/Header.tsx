@@ -15,7 +15,7 @@ import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 import "@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css";
 import { Badge } from "../ui/badge";
 import useAccount from "@/stores/useAccount";
-import { formatAleoAddress } from "@/utils";
+import { convertAddressToZeroSecureAddress, formatAleoAddress } from "@/utils";
 import { removeVisibleModifier } from "zerosecurehq-sdk";
 import { useState } from "react";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
@@ -90,7 +90,9 @@ const Header = () => {
                 <span className="text-gray-600">multisig:</span>
                 <span className="text-gray-900">
                   {formatAleoAddress(
-                    removeVisibleModifier(selectedWallet.data.wallet_address)
+                    convertAddressToZeroSecureAddress(
+                      removeVisibleModifier(selectedWallet.data.wallet_address)
+                    )
                   )}
                 </span>
               </div>
