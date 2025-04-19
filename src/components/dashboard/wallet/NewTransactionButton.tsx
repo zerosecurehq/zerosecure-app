@@ -12,15 +12,22 @@ import {
 
 import { useEffect, useState } from "react";
 import {
+  BASE_FEE,
   CREDITS_TOKEN_ID,
+  getTokenMetadata,
   removeVisibleModifier,
   TokenMetadata,
   useCreateTransaction,
 } from "zerosecurehq-sdk";
 import { toast } from "sonner";
-import useAccount from "@/stores/useAccount";
+import useAccount, { ExtendedWalletRecord } from "@/stores/useAccount";
 import { Loader2 } from "lucide-react";
-import { creditsToMicroCredits, formatAleoAddress } from "@/utils";
+import {
+  convertAddressToZeroSecureAddress,
+  creditsToMicroCredits,
+  formatAleoAddress,
+  microCreditsToCredits,
+} from "@/utils";
 import {
   Select,
   SelectContent,
@@ -31,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useToken from "@/stores/useToken";
+import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 
 const Page1 = ({
   tokens,
@@ -118,23 +126,49 @@ const Page2 = ({
   setFeeType,
   recipient,
   amount,
+  typeRecord,
+  selectedWallet,
+  tokenSelected,
 }: {
   feeType: "public" | "private";
   setFeeType: (type: "public" | "private") => void;
   recipient: string;
   amount: number;
+  typeRecord: "credits" | "token";
+  selectedWallet: ExtendedWalletRecord | null;
+  tokenSelected: string;
 }) => {
+  let [unit, setUnit] = useState("Aleo");
+  let execitionFee = microCreditsToCredits(
+    typeRecord === "credits"
+      ? BASE_FEE.execute_aleo_transfer
+      : BASE_FEE.execute_token_transfer
+  );
+  useEffect(() => {
+    const setTokenUnit = async () => {
+      if (typeRecord === "token" && tokenSelected) {
+        let tokenMetadata = await getTokenMetadata(
+          WalletAdapterNetwork.TestnetBeta,
+          tokenSelected
+        );
+        if (tokenMetadata) {
+          setUnit(tokenMetadata.symbol);
+        }
+      }
+    };
+    setTokenUnit();
+  }, [typeRecord, tokenSelected]);
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
       <div className="w-full flex justify-center items-center ">
         <div className="p-1 rounded-md text-3xl">
           {" "}
           <span className="font-semibold">{amount}</span>
-          <span className="text-xl font-mono">.00 Aleo</span>
+          <span className="text-xl font-mono">.00 {unit}</span>
         </div>
       </div>
       <div className="w-full flex items-center">
-        <span className="opacity-75">Confirmed </span>
+        <span className="opacity-75">From </span>
         <div
           style={{
             flex: "1 1 auto",
@@ -143,7 +177,13 @@ const Page2 = ({
             maskImage: "linear-gradient(90deg, transparent, #ccc, transparent)",
           }}
         ></div>
-        <span>0 of 2</span>
+        <span>
+          {formatAleoAddress(
+            convertAddressToZeroSecureAddress(
+              removeVisibleModifier(selectedWallet?.data.wallet_address || "")
+            )
+          )}
+        </span>
       </div>
       <div className="w-full flex items-center">
         <span className="opacity-75">To</span>
@@ -167,7 +207,7 @@ const Page2 = ({
             maskImage: "linear-gradient(90deg, transparent, #ccc, transparent)",
           }}
         ></div>
-        <span>0.32 Aleo</span>
+        <span>{execitionFee} Aleo</span>
       </div>
       <div className="w-full flex items-center">
         <span className="opacity-75">Fee Type</span>
@@ -279,7 +319,7 @@ const NewTransactionButton = ({
         setRecipient("");
         setAmount(0);
         reset();
-        setTokenSelected(CREDITS_TOKEN_ID);
+        setTokenSelected("");
         setOpenTransfer(value);
       }}
       open={openTransfer}
@@ -303,7 +343,7 @@ const NewTransactionButton = ({
         </DialogHeader>
         <section className="bg-gray-100 w-full relative flex justify-center items-center h-full">
           <div className="inset-0 flex justify-center items-center w-full">
-            <div className="col-span-2 bg-white rounded-md relative">
+            <div className="col-span-2 bg-white rounded-md relative w-full">
               {
                 {
                   1: (
@@ -322,6 +362,9 @@ const NewTransactionButton = ({
                       setFeeType={setFeeType}
                       recipient={recipient}
                       amount={amount}
+                      typeRecord={typeRecord}
+                      selectedWallet={selectedWallet}
+                      tokenSelected={tokenSelected}
                     />
                   ),
                   3: <Page3 />,
@@ -333,12 +376,17 @@ const NewTransactionButton = ({
                   {step <= 2 && (
                     <Button
                       onClick={() => {
+                        console.log("TTT", tokenSelected);
                         if (step === 1 && (recipient === "" || amount === 0)) {
                           toast.error("Please fill out all the fields.");
                           return;
                         } else if (step === 1 && recipient && amount) {
                           if (amount < 0) {
                             toast.error("Amount must be greater than 0.");
+                            return;
+                          }
+                          if (typeRecord === "token" && tokenSelected === "") {
+                            toast.error("Please select a token.");
                             return;
                           }
                           setStep(2);

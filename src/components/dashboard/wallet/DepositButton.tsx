@@ -23,12 +23,15 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 import useAccount, { ExtendedWalletRecord } from "@/stores/useAccount";
 import {
+  convertAddressToZeroSecureAddress,
   creditsToMicroCredits,
   formatAleoAddress,
   microCreditsToCredits,
 } from "@/utils";
 import {
+  BASE_FEE,
   CREDITS_TOKEN_ID,
+  getTokenMetadata,
   removeVisibleModifier,
   useCreateDeposit,
   useGetCreditsRecord,
@@ -36,6 +39,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { useGetTokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 import useToken from "@/stores/useToken";
+import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 
 const Page1 = ({
   setAmount,
@@ -52,7 +56,7 @@ const Page1 = ({
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
       <div className="flex- space-y-2">
-        <div>
+        <div className="w-full">
           <Label>Type of deposit</Label>
           <Select
             onValueChange={(value) => {
@@ -115,6 +119,8 @@ const Page2 = ({
   setDepositType,
   amount,
   selectedWallet,
+  typeRecord,
+  tokenSelected,
 }: {
   feeType: "public" | "private";
   setFeeType: (type: "public" | "private") => void;
@@ -122,14 +128,49 @@ const Page2 = ({
   setDepositType: (type: "public" | "private") => void;
   amount: number;
   selectedWallet: ExtendedWalletRecord;
+  typeRecord: "credits" | "token";
+  tokenSelected: string;
 }) => {
+  let [unit, setUnit] = useState("Aleo");
+  let intergerAmount = amount.toString().split(".")[0];
+  let decimalAmount = amount.toString().split(".")[1] || "00";
+  if (decimalAmount.length < 2) {
+    decimalAmount = decimalAmount + "0";
+  }
+  let execitionFee = microCreditsToCredits(
+    typeRecord === "credits"
+      ? {
+          public: BASE_FEE.deposit_aleo_public,
+          private: BASE_FEE.deposit_aleo_private,
+        }[depositType]
+      : {
+          public: BASE_FEE.deposit_token_public,
+          private: BASE_FEE.deposit_token_private,
+        }[depositType]
+  );
+  useEffect(() => {
+    const setTokenUnit = async () => {
+      if (typeRecord === "token" && tokenSelected) {
+        let tokenMetadata = await getTokenMetadata(
+          WalletAdapterNetwork.TestnetBeta,
+          tokenSelected
+        );
+        if (tokenMetadata) {
+          setUnit(tokenMetadata.symbol);
+        }
+      }
+    };
+    setTokenUnit();
+  }, [typeRecord, tokenSelected]);
   return (
     <div className="p-5 space-y-6 border-t border-b border-gray-200">
       <div className="w-full flex justify-center items-center ">
         <div className="p-1 rounded-md text-3xl">
           {" "}
-          <span className="font-semibold">{Number(amount)} Aleo</span>
-          {/* <span className="text-xl font-mono">.44 Aleo</span> */}
+          <span className="font-semibold">{intergerAmount}</span>
+          <span className="text-xl font-mono">
+            .{decimalAmount} {unit}
+          </span>
         </div>
       </div>
       <div className="w-full flex items-center">
@@ -144,7 +185,9 @@ const Page2 = ({
         ></div>
         <span>
           {formatAleoAddress(
-            removeVisibleModifier(selectedWallet.data.wallet_address)
+            convertAddressToZeroSecureAddress(
+              removeVisibleModifier(selectedWallet.data.wallet_address)
+            )
           )}
         </span>
       </div>
@@ -158,7 +201,7 @@ const Page2 = ({
             maskImage: "linear-gradient(90deg, transparent, #ccc, transparent)",
           }}
         ></div>
-        <span>0.32 Aleo</span>
+        <span>{execitionFee} Aleo</span>
       </div>
       <div className="w-full flex items-center">
         <span className="opacity-75">Deposit Type</span>
@@ -377,7 +420,7 @@ const DepositButton = ({
         </DialogHeader>
         <section className="bg-gray-100 w-full relative flex justify-center items-center h-full">
           <div className="inset-0 flex justify-center items-center w-full">
-            <div className="col-span-2 bg-white rounded-md relative">
+            <div className="col-span-2 bg-white rounded-md relative w-full">
               {
                 {
                   1: (
@@ -390,12 +433,14 @@ const DepositButton = ({
                   ),
                   2: (
                     <Page2
+                      typeRecord={typeRecord}
                       depositType={depositType}
                       setDepositType={setDepositType}
                       feeType={feeType}
                       setFeeType={setFeeType}
                       amount={amount}
                       selectedWallet={selectedWallet!}
+                      tokenSelected={tokenSelected}
                     />
                   ),
                   3: <Page3 />,
