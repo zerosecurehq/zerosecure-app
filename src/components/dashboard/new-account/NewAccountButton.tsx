@@ -100,7 +100,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
       });
       if (txHash) {
         reset();
-        toast("Wallet created successfully");
+        toast.success("Wallet created successfully");
         setNewSigner({ name: "", address: "" });
         setSignerList([DEFAULT_SIGNER]);
         const nameParser = JSON.parse(localStorage.getItem("name") || "{}");
@@ -129,13 +129,13 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
         setCurrentStep(1);
       }
     } catch (error) {
-      toast(`${error}`);
+      toast.error(`${error}`);
     }
   };
 
   useEffect(() => {
     if (error) {
-      toast(`Error creating wallet ${error.message}`);
+      toast.error(`Error creating wallet ${error.message}`);
       reset();
     }
     if (txId) {
@@ -340,7 +340,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                             !newSigner.name.trim() ||
                             !newSigner.address.trim()
                           ) {
-                            toast(
+                            toast.error(
                               "Please enter signer name and address before adding!"
                             );
                             return;
@@ -351,12 +351,12 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                               (s) => s.address === newSigner.address
                             )
                           ) {
-                            toast("This address already exists!");
+                            toast.error("This address already exists!");
                             return;
                           }
 
                           if (signerList.length >= 8) {
-                            toast("Maximum 8 signers allowed!");
+                            toast.error("Maximum 8 signers allowed!");
                             return;
                           }
 
@@ -381,7 +381,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                         <Select
                           onValueChange={(value) => {
                             if (parseInt(value) - 1 > signerList.length) {
-                              toast(
+                              toast.error(
                                 "Threshold must be less than or equal to the number of signers"
                               );
                               return;
@@ -445,7 +445,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                                     navigator.clipboard.writeText(
                                       signer.address
                                     );
-                                    toast("Copied to clipboard");
+                                    toast.info("Copied to clipboard");
                                   }}
                                 />
                                 <Share className="cursor-pointer" size={16} />
@@ -507,7 +507,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                       onClick={() => {
                         if (currentStep === 1) {
                           if (walletName.trim() === "") {
-                            toast("Please enter a wallet name");
+                            toast.error("Please enter a wallet name");
                             return;
                           }
                         }

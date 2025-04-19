@@ -16,12 +16,12 @@ import {
   useApplyExecuteTicket,
 } from "zerosecurehq-sdk";
 
-interface ExcutingRowProps {
+interface ExecutingRowProps {
   data: ExecuteTicketRecord;
   getExcute: () => void;
 }
 
-const ExcutingRow = ({ data, getExcute }: ExcutingRowProps) => {
+const ExecutingRow = ({ data, getExcute }: ExecutingRowProps) => {
   const {
     applyExecuteTicket,
     error,
@@ -33,7 +33,7 @@ const ExcutingRow = ({ data, getExcute }: ExcutingRowProps) => {
 
   useEffect(() => {
     if (error) {
-      toast(`Error excute: ${error.message}`);
+      toast.error(`Error excute: ${error.message}`);
       resetExcute();
     }
   }, [error]);
@@ -57,7 +57,7 @@ const ExcutingRow = ({ data, getExcute }: ExcutingRowProps) => {
   const handleApplyExcute = async (dataExcute: ExecuteTicketRecord) => {
     const txHash = await applyExecuteTicket(dataExcute);
     if (txHash) {
-      toast("Transaction excuted successfully");
+      toast.error("Transaction executed successfully");
       resetExcute();
       getExcute();
     }
@@ -112,4 +112,4 @@ const ExcutingRow = ({ data, getExcute }: ExcutingRowProps) => {
   );
 };
 
-export default ExcutingRow;
+export default ExecutingRow;

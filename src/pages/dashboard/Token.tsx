@@ -69,7 +69,7 @@ const Token = () => {
     e.preventDefault();
     if (!tokenId) return;
     if (tokens.some((item) => item.token_id === tokenId)) {
-      toast("Token already exists");
+      toast.error("Token already exists");
       setTokenId("");
       return;
     }

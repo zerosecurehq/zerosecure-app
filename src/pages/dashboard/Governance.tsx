@@ -134,16 +134,14 @@ const Governance = () => {
       isArrayChangedById(oldOwners, newOwners) ||
       parseInt(newThreshold) !== parseInt(selectedWallet.data.threshold);
     if (!isChanged) return toast.error("No changes detected");
-    toast(
-      "Please wait while we prepare your transaction, it may take a few minutes..."
-    );
+    toast.info("Please wait while we prepare your transaction...");
     const txIdHash = await createChangeGovernance(
       selectedWallet,
       [...newSignerList.map((item) => removeVisibleModifier(item.address))],
       Number(newThreshold)
     );
     if (txIdHash) {
-      toast("Governance updated successfully");
+      toast.success("Governance updated successfully");
       reset();
     }
   };
@@ -156,10 +154,10 @@ const Governance = () => {
     }
   ) => {
     if (!selectedWallet) return;
-    toast("Please wait while we prepare your transaction...");
+    toast.info("Please wait while we prepare your transaction...");
     const txIdHash = await createChangeRole(selectedWallet, type, data);
     if (txIdHash) {
-      toast("Role updated successfully");
+      toast.success("Role updated successfully");
       changeRoleReset();
     }
   };
@@ -241,10 +239,10 @@ const Governance = () => {
 
   useEffect(() => {
     if (error) {
-      toast(error.message);
+      toast.error(error.message);
     }
     if (changeRoleError) {
-      toast(changeRoleError.message);
+      toast.error(changeRoleError.message);
     }
   }, [error, changeRoleError]);
 
@@ -289,7 +287,6 @@ const Governance = () => {
         />
       </div>
       <Card>
-        {/* @TODO: implement the edit admin function */}
         <CardHeader>
           <CardTitle>Edit Admin</CardTitle>
         </CardHeader>
@@ -395,7 +392,7 @@ const Governance = () => {
                         newSigner.name.trim() === "" ||
                         newSigner.address.trim() === ""
                       ) {
-                        toast("Cannot empty");
+                        toast.error("Signer name and address cannot be empty");
                         return;
                       }
                       if (
@@ -405,7 +402,7 @@ const Governance = () => {
                             newSigner.address
                         )
                       ) {
-                        toast("Cannot be the same");
+                        toast.error("This signer already exists");
                         return;
                       }
                       setNewSignerList((prev) => [...prev, newSigner]);
@@ -510,11 +507,11 @@ const Governance = () => {
                         newManager.name.trim() === "" ||
                         newManager.address.trim() === ""
                       ) {
-                        toast("Cannot empty");
+                        toast.error("Manager name and address cannot be empty");
                         return;
                       }
                       if (adminWallet === newManager.address) {
-                        toast(
+                        toast.error(
                           "You already are the admin, don't need to add yourself as a manager"
                         );
                         return;
@@ -526,7 +523,7 @@ const Governance = () => {
                             newManager.address
                         )
                       ) {
-                        toast("This manager already exists");
+                        toast.error("This manager already exists");
                         return;
                       }
                       setManagersList((prev) => [...prev, newManager]);
@@ -585,4 +582,3 @@ const Governance = () => {
 };
 
 export default Governance;
-// @TODO: implement logic to updat admin and manager

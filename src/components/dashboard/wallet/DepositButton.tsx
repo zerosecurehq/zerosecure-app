@@ -286,7 +286,7 @@ const DepositButton = ({
       );
       if (txHash) {
         reset();
-        toast("Desposit successful");
+        toast.success("Desposit successful");
         setAmount(0);
         setTokenSelected("");
         setTypeRecord("credits");
@@ -297,7 +297,7 @@ const DepositButton = ({
       let tokenRecord;
       if (typeRecord === "credits") {
         const record = await getCreditsRecord();
-        if (!record) return toast("Credits record not found");
+        if (!record) return toast.error("Credits record not found");
         creditsRecord = record.find(
           (item) =>
             microCreditsToCredits(parseInt(item.data.microcredits)) >= amount
@@ -310,7 +310,7 @@ const DepositButton = ({
         const tokenRecords = await getTokenRecord(tokenSelected);
         if (!tokenRecords) {
           setStep(1);
-          return toast("Tokens not found");
+          return toast.error("Tokens not found");
         }
         tokenRecord = tokenRecords.find(
           (item) => microCreditsToCredits(parseInt(item.data.amount)) >= amount
@@ -328,7 +328,7 @@ const DepositButton = ({
       );
       if (txHash) {
         reset();
-        toast("Desposit successful");
+        toast.error(`Deposit ${amount} ${typeRecord} successful`);
         setAmount(0);
         setTokenSelected("");
         setTypeRecord("credits");
@@ -339,14 +339,14 @@ const DepositButton = ({
 
   useEffect(() => {
     if (errorToken) {
-      toast(`Error despositing ${error.message}`);
+      toast.error(`Error despositing ${error.message}`);
       resetToken();
     }
   }, [errorToken]);
 
   useEffect(() => {
     if (error) {
-      toast(`Error despositing ${error.message}`);
+      toast.error(`Error despositing ${error.message}`);
       reset();
     }
     if (txId) {
@@ -424,7 +424,9 @@ const DepositButton = ({
                         }
                         if (step === 1) {
                           if (amount <= 0) {
-                            toast("Please enter an amount greater than 0");
+                            toast.error(
+                              "Please enter an amount greater than 0"
+                            );
                             return;
                           }
                         }

@@ -265,7 +265,7 @@ const NewTransactionButton = ({
     if (txHash) {
       reset();
       setAmount(0);
-      toast("Create transaction successfully");
+      toast.success("Create transaction successfully");
       setRecipient("");
       setTokenSelected("");
       setOpenTransfer(false);
@@ -345,11 +345,11 @@ const NewTransactionButton = ({
                     <Button
                       onClick={() => {
                         if (step === 1 && (recipient === "" || amount === 0)) {
-                          toast("Please fill out all the fields.");
+                          toast.error("Please fill out all the fields.");
                           return;
                         } else if (step === 1 && recipient && amount) {
                           if (amount < 0) {
-                            toast("Amount must be greater than 0.");
+                            toast.error("Amount must be greater than 0.");
                             return;
                           }
                           setStep(2);

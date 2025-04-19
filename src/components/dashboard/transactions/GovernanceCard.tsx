@@ -2,12 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import useAccount from "@/stores/useAccount";
-import {
-  enoughComfirm,
-  getAddedOwners,
-  getRemovedOwners,
-  network,
-} from "@/utils";
+import { getAddedOwners, getRemovedOwners, network } from "@/utils";
 import { Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -54,11 +49,11 @@ const GovernanceCard = ({
 
   useEffect(() => {
     if (errorConfirm) {
-      toast(`Error confirm governance ${errorConfirm.message}`);
+      toast.error(`Error confirm governance ${errorConfirm.message}`);
       resetConfirm();
     }
     if (errorExecute) {
-      toast(`Error execute governance ${errorExecute.message}`);
+      toast.error(`Error execute governance ${errorExecute.message}`);
       resetExecute();
     }
   }, [errorConfirm, errorExecute]);
@@ -94,14 +89,17 @@ const GovernanceCard = ({
   const addCount = getAddedOwners(cleanedNew, cleanedOld);
   const removeCount = getRemovedOwners(cleanedNew, cleanedOld);
 
-  const isEnough = enoughComfirm(confirmed.toString(), data.data.new_threshold);
-
   const handleConfirmGovernance = async () => {
     if (!selectedWallet) return;
     const txIdHash = await applyConfirmChangeGovernanceTicket(data);
     if (txIdHash) {
-      // @TODO: sometimes it takes a while to update Confirm to Execute. We should mark a confirm ticket as "used" and dont list it again in Confirm List (used request_id to identify Confirm Ticket).
-      // NOTE: request_id is same for Confirm and Execute (for all owners also) if they come from the same governance change.
+      const signed = JSON.parse(
+        localStorage.getItem("signedGovernances") || "[]"
+      );
+      if (!signed.includes(data.id)) {
+        signed.push(data.id);
+        localStorage.setItem("signedGovernances", JSON.stringify(signed));
+      }
       toast.success("Governance confirmed");
       resetConfirm();
       getGovernanceConfirm();

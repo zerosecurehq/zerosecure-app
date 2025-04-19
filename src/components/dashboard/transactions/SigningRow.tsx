@@ -50,7 +50,7 @@ const SigningRow = ({ data, getSigning, setSigning }: SigningRowProps) => {
 
   useEffect(() => {
     if (error) {
-      toast(`Error confirm ${error.message}`);
+      toast.error(`Error confirm ${error.message}`);
       resetConfirm();
     }
   }, [error]);
@@ -62,7 +62,7 @@ const SigningRow = ({ data, getSigning, setSigning }: SigningRowProps) => {
     if (txHash) {
       resetConfirm();
       getSigning();
-      toast("Transaction signed successfully");
+      toast.error("Transaction signed successfully");
 
       // cache signed transaction in local storage to avoid signing again
       const signed = JSON.parse(

@@ -27,21 +27,26 @@ const GovernanceList = () => {
     error: errorExecute,
     reset: resetExecute,
   } = useGetExecuteChangeGovernanceTicket();
-  const [governanceComfirm, setGovernanComfirm] = useState<
+  const [governanceComfirm, setGovernanceComfirm] = useState<
     ConfirmChangeGovernanceTicketRecord[]
   >([]);
-  const [governanceExecute, setGovernanExecute] = useState<
+  const [governanceExecute, setGovernanceExecute] = useState<
     ExecuteChangeGovernanceTicketRecord[]
   >([]);
 
   const getGovernanceConfirm = async () => {
     const result = await getConfirmGovernanceTicket();
-    setGovernanComfirm(result ?? []);
+    if (result === void 0) return;
+    const signed = JSON.parse(
+      localStorage.getItem("signedGovernances") || "[]"
+    );
+    const filtered = result.filter((item) => !signed.includes(item.id));
+    setGovernanceComfirm(filtered);
   };
 
   const getGovernanceExecute = async () => {
     const result = await getExecuteGovernanceTicket();
-    setGovernanExecute(result ?? []);
+    setGovernanceExecute(result ?? []);
   };
 
   useEffect(() => {
@@ -53,11 +58,15 @@ const GovernanceList = () => {
 
   useEffect(() => {
     if (errorConfirm) {
-      toast("Something went wrong");
+      toast.error(
+        "Something went wrong with confirm governance " + errorConfirm.message
+      );
       resetConfirm();
     }
     if (errorExecute) {
-      toast("Something went wrong");
+      toast.error(
+        "Something went wrong with execute governance " + errorExecute.message
+      );
       resetExecute();
     }
   }, [errorConfirm, errorExecute]);
