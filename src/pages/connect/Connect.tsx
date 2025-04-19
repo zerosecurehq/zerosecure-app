@@ -33,10 +33,8 @@ const Connect = () => {
     const rawName = localStorage.getItem("name") || "{}";
     const parsedName = JSON.parse(rawName);
     const address = removeVisibleModifier(selectedWallet.data.wallet_address);
-    const selectedData = parsedName?.[address];
+    const name = parsedName?.[address];
     if (search.trim() === "") return true;
-    const name = selectedData?.[publicKey];
-    if (!name) return false;
     return name.toLowerCase().includes(search.toLowerCase());
   })();
 
@@ -62,22 +60,18 @@ const Connect = () => {
     }
     const storedNames = localStorage.getItem("name");
     const parsedNames = storedNames
-      ? (JSON.parse(storedNames) as Record<string, Record<string, string>>)
+      ? (JSON.parse(storedNames) as Record<string, string>)
       : {};
     const filteredWallets = wallets.filter((wallet) => {
       const walletName =
-        parsedNames[removeVisibleModifier(wallet.data.wallet_address)]?.[
-          publicKey
-        ] || "";
+        parsedNames[removeVisibleModifier(wallet.data.wallet_address)] || "";
       return (
         search === "" || walletName.toLowerCase().includes(search.toLowerCase())
       );
     });
     const filteredPinnedWallets = pinnedWallets.filter((wallet) => {
       const walletName =
-        parsedNames[removeVisibleModifier(wallet.data.wallet_address)]?.[
-          publicKey
-        ] || "";
+        parsedNames[removeVisibleModifier(wallet.data.wallet_address)] || "";
       return (
         search === "" || walletName.toLowerCase().includes(search.toLowerCase())
       );
@@ -223,19 +217,21 @@ const Connect = () => {
               {filteredWallets.length > 0 ? (
                 <>
                   {selectedWallet &&
-                    selectedInSearch &&
-                    !filteredPinnedWallets.some(
-                      (w) =>
-                        w.data.wallet_address ===
-                        selectedWallet.data.wallet_address
-                    ) && (
-                      <CardWallet
-                        key={selectedWallet.data.wallet_address}
-                        wallet={selectedWallet}
-                        isPinned={false}
-                        togglePin={() => togglePinnedWallet(selectedWallet)}
-                      />
-                    )}
+                  selectedInSearch &&
+                  !filteredPinnedWallets.some(
+                    (w) =>
+                      w.data.wallet_address ===
+                      selectedWallet.data.wallet_address
+                  ) ? (
+                    <CardWallet
+                      key={selectedWallet.data.wallet_address}
+                      wallet={selectedWallet}
+                      isPinned={false}
+                      togglePin={() => togglePinnedWallet(selectedWallet)}
+                    />
+                  ) : (
+                    ""
+                  )}
                   {filteredWallets
                     .filter(
                       (wallet) =>

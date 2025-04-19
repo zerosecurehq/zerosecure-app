@@ -54,7 +54,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
   const { publicKey } = useWallet();
   const DEFAULT_SIGNER = {
     name: "Me",
-    address: publicKey as string,
+    address: removeVisibleModifier(publicKey as string),
   };
   const [currentStep, setCurrentStep] = useState(1);
   const { setWallets, setSelectedWallet } = useAccount();
@@ -104,9 +104,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
         setNewSigner({ name: "", address: "" });
         setSignerList([DEFAULT_SIGNER]);
         const nameParser = JSON.parse(localStorage.getItem("name") || "{}");
-        nameParser[removeVisibleModifier(address)] = {
-          [publicKey]: walletName,
-        };
+        nameParser[removeVisibleModifier(address)] = walletName;
         localStorage.setItem("name", JSON.stringify(nameParser));
         const mappingNameParse = JSON.parse(
           localStorage.getItem("mappingName") || "{}"
