@@ -37,15 +37,6 @@ const gradients = [
 export const getRandomGradient = () =>
   gradients[Math.floor(Math.random() * gradients.length)];
 
-export function convertKey(input: string): string {
-  if (input.length <= 8) return input;
-
-  const firstPart = input.slice(0, 4);
-  const lastPart = input.slice(-4);
-
-  return `${firstPart}...${lastPart}`;
-}
-
 export function formatAleoAddress(address: string): string {
   const firstPart = address.slice(0, 8);
   const lastPart = address.slice(-5);
@@ -105,23 +96,25 @@ export const isArrayChangedById = (
 export const getAddedOwners = (
   newOwners: string[],
   oldOwners: string[]
-): number => {
+): string[] => {
   const newSet = new Set(newOwners);
   const oldSet = new Set(oldOwners);
 
-  return [...newSet].filter((addr) => !oldSet.has(addr)).length;
+  const addedOwners = [...newSet]
+    .filter((addr) => !oldSet.has(addr))
+    .map((addr) => removeVisibleModifier(addr));
+  return addedOwners;
 };
 
 export const getRemovedOwners = (
   newOwners: string[],
   oldOwners: string[]
-): number => {
+): string[] => {
   const newSet = new Set(newOwners);
   const oldSet = new Set(oldOwners);
 
-  return [...oldSet].filter((addr) => !newSet.has(addr)).length;
-};
-
-export const enoughComfirm = (confirmed: string, request: string): boolean => {
-  return parseInt(confirmed) >= parseInt(request);
+  const removedOwners = [...oldSet]
+    .filter((addr) => !newSet.has(addr))
+    .map((addr) => removeVisibleModifier(addr));
+  return removedOwners;
 };

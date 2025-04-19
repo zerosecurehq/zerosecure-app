@@ -1,7 +1,6 @@
 import DepositButton from "@/components/dashboard/wallet/DepositButton";
 import NewTransactionButton from "@/components/dashboard/wallet/NewTransactionButton";
 import { Card, CardContent } from "@/components/ui/card";
-import Warning from "@/components/ui/Warning";
 import useAccount from "@/stores/useAccount";
 import { Wallet } from "lucide-react";
 import { useEffect, useState } from "react";

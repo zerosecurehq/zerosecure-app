@@ -1,7 +1,6 @@
 import Signing from "../../components/dashboard/transactions/Signing";
 import History from "../../components/dashboard/transactions/History";
 import Executing from "@/components/dashboard/transactions/Executing";
-import Warning from "@/components/ui/Warning";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,8 +18,8 @@ const Transactions = () => {
             <TabsList className="flex items-center w-fit space-x-3 bg-gray-200">
               <TabsTrigger value="signing">Signing</TabsTrigger>
               <TabsTrigger value="excute">Excute</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
               <TabsTrigger value="governance">Governance</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-4">
               <Switch id="hideSuspicious" />

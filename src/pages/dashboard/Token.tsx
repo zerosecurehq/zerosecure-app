@@ -4,7 +4,6 @@ import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Warning from "@/components/ui/Warning";
 import { getTokenMetadata } from "zerosecurehq-sdk";
 import { network } from "@/utils";
 import { toast } from "sonner";

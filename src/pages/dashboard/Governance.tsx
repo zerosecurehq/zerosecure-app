@@ -85,7 +85,8 @@ const Governance = () => {
   const [newSigner, setNewSigner] = useState({ name: "", address: "" });
   const [newManager, setNewManager] = useState({ name: "", address: "" });
   const [newThreshold, setNewThreshold] = useState("0");
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openDialogAddSigner, setOpenDialogAddSigner] = useState(false);
+  const [openDialogAddManager, setOpenDialogAddManager] = useState(false);
   let [isHasPermission, setIsHasPermission] = useState(false);
   let [managersList, setManagersList] = useState<
     Array<{ name: string; address: string }>
@@ -141,7 +142,7 @@ const Governance = () => {
       Number(newThreshold)
     );
     if (txIdHash) {
-      toast.success("Governance updated successfully");
+      toast.success("Governance change request created successfully");
       reset();
     }
   };
@@ -202,7 +203,7 @@ const Governance = () => {
           myWalletOwnersHashedToField.indexOf(
             walletAdminHashedToField as string
           )
-        ]
+        ] || ""
       );
       let managersWalletListPlainText = managersWalletHashedToFieldList
         .replace(/[\[\]"\n]/g, "")
@@ -214,6 +215,7 @@ const Governance = () => {
             myWalletOwnersHashedToField.indexOf(field)
           ];
         })
+        .filter((wallet) => wallet)
         .map((wallet) => removeVisibleModifier(wallet));
 
       // mapping manager wallet to name
@@ -336,9 +338,9 @@ const Governance = () => {
             <Dialog
               onOpenChange={(open) => {
                 setNewSigner({ name: "", address: "" });
-                setOpenDialog(open);
+                setOpenDialogAddSigner(open);
               }}
-              open={openDialog}
+              open={openDialogAddSigner}
             >
               <DialogTrigger asChild>
                 <Button
@@ -400,7 +402,7 @@ const Governance = () => {
                         return;
                       }
                       setNewSignerList((prev) => [...prev, newSigner]);
-                      setOpenDialog(false);
+                      setOpenDialogAddSigner(false);
                     }}
                   >
                     Add signer
@@ -448,9 +450,9 @@ const Governance = () => {
             <Dialog
               onOpenChange={(open) => {
                 setNewManager({ name: "", address: "" });
-                setOpenDialog(open);
+                setOpenDialogAddManager(open);
               }}
-              open={openDialog}
+              open={openDialogAddManager}
             >
               <DialogTrigger asChild>
                 <Button
@@ -521,7 +523,7 @@ const Governance = () => {
                         return;
                       }
                       setManagersList((prev) => [...prev, newManager]);
-                      setOpenDialog(false);
+                      setOpenDialogAddManager(false);
                     }}
                   >
                     Add manager

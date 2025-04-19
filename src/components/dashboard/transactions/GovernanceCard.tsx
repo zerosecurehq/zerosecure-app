@@ -2,11 +2,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import useAccount from "@/stores/useAccount";
-import { getAddedOwners, getRemovedOwners, network } from "@/utils";
-import { Loader2Icon } from "lucide-react";
+import {
+  formatAleoAddress,
+  getAddedOwners,
+  getRemovedOwners,
+  network,
+} from "@/utils";
+import {
+  Copy,
+  Loader2Icon,
+  Settings2,
+  UserCog,
+  UserRoundMinus,
+  UserRoundPlus,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   ConfirmChangeGovernanceTicketRecord,
   ExecuteChangeGovernanceTicketRecord,
@@ -86,8 +98,10 @@ const GovernanceCard = ({
   const cleanedNew = clean(data.data.new_owners);
   const cleanedOld = clean(selectedWallet.data.owners);
 
-  const addCount = getAddedOwners(cleanedNew, cleanedOld);
-  const removeCount = getRemovedOwners(cleanedNew, cleanedOld);
+  const addedOwners = getAddedOwners(cleanedNew, cleanedOld);
+  const addCount = addedOwners.length;
+  const removedOwners = getRemovedOwners(cleanedNew, cleanedOld);
+  const removeCount = removedOwners.length;
 
   const handleConfirmGovernance = async () => {
     if (!selectedWallet) return;
@@ -120,10 +134,72 @@ const GovernanceCard = ({
     }
   };
 
+  const handleCopy = (addr: string) => {
+    navigator.clipboard.writeText(addr).then(() => {
+      toast.success("Copied to clipboard");
+    });
+  };
+
+  let isEnoughConfirm = confirmed >= parseInt(data.data.new_threshold);
+  let isThresholdChange =
+    parseInt(data.data.new_threshold) !== parseInt(data.data.old_threshold);
+
   return (
     <TableRow className="text-center relative cursor-pointer">
-      <TableCell>{`Add(+${addCount}) | Remove(-${removeCount})`}</TableCell>
-      <TableCell>{parseInt(data.data.new_threshold)}</TableCell>
+      <TableCell>
+        <Dialog>
+          <DialogTrigger asChild>
+            <div className="flex items-center justify-center gap-2 hover:underline">
+              <UserCog size={16} />{" "}
+              {`Added (+${addCount}) | Removed (-${removeCount})`}
+            </div>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <div>
+              <span className="font-semibold">Added</span>
+              <div>
+                {addedOwners.map((addr) => (
+                  <div className="flex items-center gap-2">
+                    <UserRoundPlus size={16} />
+                    {formatAleoAddress(addr)}
+                    <Copy
+                      onClick={() => handleCopy(addr)}
+                      className="cursor-pointer"
+                      size={16}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="font-semibold">Removed</span>
+              <div>
+                {removedOwners.map((addr) => (
+                  <div className="flex items-center gap-2">
+                    <UserRoundMinus size={16} />
+                    {formatAleoAddress(addr)}
+                    <Copy
+                      onClick={() => handleCopy(addr)}
+                      className="cursor-pointer"
+                      size={16}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center justify-center gap-2">
+          <Settings2 size={16} />
+          {!isThresholdChange
+            ? `${parseInt(data.data.new_threshold)} (no change)`
+            : `${parseInt(data.data.old_threshold)} -> ${parseInt(
+                data.data.new_threshold
+              )}`}
+        </div>
+      </TableCell>
       {/* @TODO (need backend) add date */}
       <TableCell>{data.data.sequence}</TableCell>
       <TableCell>
@@ -144,7 +220,9 @@ const GovernanceCard = ({
         </Button>
       </TableCell>
       <Badge
-        className="absolute top-1/2 right-0 -translate-y-1/2 rounded-full mr-2"
+        className={`absolute top-1/2 right-0 -translate-y-1/2 rounded-full mr-2 ${
+          isEnoughConfirm ? "bg-gradient-primary text-white" : ""
+        }`}
         variant={"outline"}
       >
         {confirmed}/{parseInt(data.data.old_threshold)}
