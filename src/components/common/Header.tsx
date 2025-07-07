@@ -2,25 +2,42 @@ import {
   ArrowUpDown,
   Bell,
   ChevronDown,
+  ChevronUp,
   Coins,
   Home,
-  User,
-  Wallet,
+  KeyRound,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import ZeroIcon from "./ZeroIcon";
-import { Button } from "../ui/button";
 import { WalletMultiButton } from "@demox-labs/aleo-wallet-adapter-reactui";
 import "@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css";
 import { Badge } from "../ui/badge";
+import useAccount from "@/stores/useAccount";
+import { convertAddressToZeroSecureAddress, formatAleoAddress } from "@/utils";
+import { removeVisibleModifier } from "zerosecurehq-sdk";
+import { useState } from "react";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 
 const NAVIGATE_PAGES = [
   { name: "Home", icon: Home, href: "/" },
   { name: "Transactions", icon: ArrowUpDown, href: "/transactions" },
-  { name: "Account", icon: User, href: "/connect" },
+  { name: " Governance", icon: KeyRound, href: "/governance" },
+  { name: " Token", icon: Coins, href: "/token" },
 ];
 
-const Header = ({ isConnected }: { isConnected: boolean }) => {
+const Header = () => {
+  const { publicKey } = useWallet();
+  const { selectedWallet, resetWallet } = useAccount();
+  const [open, setOpen] = useState(false);
+
+  let walletName = localStorage.getItem("name") || "{}";
+  walletName =
+    JSON.parse(walletName)[
+      removeVisibleModifier(selectedWallet?.data.wallet_address || "")
+    ];
+
   return (
     <header className="bg-white border-b-gray-200 border-b flex items-center justify-between fixed top-0 left-0 w-full h-16 z-20">
       <div className="text-3xl font-bold p-4">
@@ -35,7 +52,15 @@ const Header = ({ isConnected }: { isConnected: boolean }) => {
       <div className="flex flex-1 justify-center">
         {" "}
         {NAVIGATE_PAGES?.map((item) => (
-          <Button key={item.name} asChild variant="ghost" className="mx-1">
+          <Button
+            key={item.name}
+            asChild
+            variant="ghost"
+            className={`mx-1 ${
+              ((!selectedWallet && item.name !== "Account") || !publicKey) &&
+              "hidden"
+            }`}
+          >
             <Link to={item.href} className="flex items-center p-3 rounded-lg">
               <div className="flex items-center gap-2">
                 <item.icon size={20} />
@@ -46,19 +71,63 @@ const Header = ({ isConnected }: { isConnected: boolean }) => {
         ))}
       </div>
       <div className="flex items-center h-full">
-        <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer hover:bg-gray-200">
+        <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer hover:bg-gray-100">
           <Bell />
         </div>
-        {isConnected && (
-          <div className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-200">
-            <div className="w-12 h-12 relative bg-gradient-primary rounded-xl"></div>
+        {selectedWallet && (
+          <div
+            onClick={() => setOpen(!open)}
+            className="h-full flex items-center justify-center border-r border-gray-200 p-5 cursor-pointer gap-3 hover:bg-gray-100 relative"
+          >
+            <div
+              className={`w-12 h-12 relative ${selectedWallet?.avatar} rounded-xl`}
+            />
             <div className="text-sm flex-1">
               <div className="font-semibold text-center">
-                <Badge>Wallet 1</Badge>
+                <Badge>{walletName}</Badge>
               </div>
-              <div className="text-sm mt-1">multisig: aleo12a...ss2s</div>
+              <div className="text-sm mt-1 flex items-center justify-between gap-2">
+                <span className="text-gray-600">multisig:</span>
+                <span className="text-gray-900">
+                  {formatAleoAddress(
+                    convertAddressToZeroSecureAddress(
+                      removeVisibleModifier(selectedWallet.data.wallet_address)
+                    )
+                  )}
+                </span>
+              </div>
             </div>
-            <ChevronDown />
+            {open ? (
+              <>
+                <ChevronDown size={20} />
+              </>
+            ) : (
+              <ChevronUp size={20} />
+            )}
+            {open && (
+              <Card className="absolute top-full right-0 mt-2 w-full">
+                <CardHeader>
+                  <CardTitle>Wallet</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2">
+                  <Link to="/connect" className="w-full">
+                    <Button variant={"outline"} className="w-full">
+                      Manage Account
+                    </Button>
+                  </Link>
+                  <Button
+                    variant={"outline"}
+                    className="w-full text-red-500 hover:text-red-700"
+                    onClick={() => {
+                      setOpen(false);
+                      resetWallet();
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 

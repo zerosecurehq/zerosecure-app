@@ -1,92 +1,101 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "../../ui/button";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCaption } from "@/components/ui/table";
+import { ExecuteTicketRecord, useGetExecuteTicket } from "zerosecurehq-sdk";
+import { useEffect, useState } from "react";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
+import ExecutingRow from "./ExecutingRow";
+import { toast } from "sonner";
+import RawSkeleton from "./RawSkeleton";
 
-const transactions = [
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: 3,
-    signed: 2,
-  },
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: 3,
-    signed: 2,
-  },
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: 3,
-    signed: 3,
-  },
-  // {
-  //   action: "Smart Contract Deployed",
-  //   createdBy: "0x2F8D...C3E4",
-  //   time: "11:20 AM",
-  //   status: "Success",
-  // },
-  // {
-  //   action: "Liquidity Added",
-  //   createdBy: "0x55AA...FF99",
-  //   time: "1:45 PM",
-  //   status: "Pending",
-  // },
-  // {
-  //   action: "Vote Submitted",
-  //   createdBy: "0x7B3E...11DD",
-  //   time: "3:30 PM",
-  //   status: "Failed",
-  // },
-];
+// const fakeExecuteTickets: ExecuteTicketRecord[] = [
+//   {
+//     id: "exec_001",
+//     spent: false,
+//     recordName: "execute_ticket",
+//     name: "ticket_exec_001",
+//     owner: "aleo1ownerexec001",
+//     program_id: "execute_program_v1",
+//     status: "ready",
+//     data: {
+//       wallet_address: "aleo1walletexec001",
+//       amount: "500",
+//       transfer_id: "transfer_exec_001",
+//       to: "aleo1recipientexec001"
+//     }
+//   },
+//   {
+//     id: "exec_002",
+//     spent: true,
+//     recordName: "execute_ticket",
+//     name: "ticket_exec_002",
+//     owner: "aleo1ownerexec002",
+//     program_id: "execute_program_v1",
+//     status: "executed",
+//     data: {
+//       wallet_address: "aleo1walletexec002",
+//       amount: "200",
+//       transfer_id: "transfer_exec_002",
+//       to: "aleo1recipientexec002"
+//     }
+//   },
+//   {
+//     id: "exec_003",
+//     spent: false,
+//     recordName: "execute_ticket",
+//     name: "ticket_exec_003",
+//     owner: "aleo1ownerexec003",
+//     program_id: "execute_program_v1",
+//     status: "pending",
+//     data: {
+//       wallet_address: "aleo1walletexec003",
+//       amount: "300",
+//       transfer_id: "transfer_exec_003",
+//       to: "aleo1recipientexec003"
+//     }
+//   }
+// ];
 
-const Signing = () => {
+const Executing = () => {
+  const { publicKey } = useWallet();
+  const { getExecuteTicket, error, isProcessing, reset } =
+    useGetExecuteTicket();
+  const [excute, setExcute] = useState<ExecuteTicketRecord[]>([]);
+
+  const getExcute = async () => {
+    const result = await getExecuteTicket();
+    if (result !== undefined) {
+      setExcute(result);
+    }
+  };
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Something went wrong while fetching execute tickets");
+      reset();
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (publicKey) {
+      getExcute();
+    }
+  }, [publicKey]);
+
   return (
     <article>
       <Table>
         <TableCaption className="caption-top text-sm">
-          A list of your wait for signing transactions.
+          Your execute transactions will be listed here.
         </TableCaption>
         <TableBody>
-          {transactions.map((transaction, index) => (
-            <TableRow key={index} className="text-center relative">
-              <TableCell className="font-medium">{transaction.to}</TableCell>
-              <TableCell>{transaction.amount}</TableCell>
-              <TableCell>{transaction.time}</TableCell>
-              <TableCell>
-                <Button variant={"outline"}>Sign Transaction</Button>
-              </TableCell>
-              {transaction.signed !== transaction.signers ? (
-                <Badge
-                  variant={"outline"}
-                  className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full"
-                >
-                  {transaction.signed}/{transaction.signers}
-                </Badge>
-              ) : (
-                <Badge
-                  variant={"outline"}
-                  className="absolute top-1/2 -translate-y-1/2 right-0 rounded-full bg-gradient-primary text-white"
-                >
-                  {transaction.signed}/{transaction.signers}
-                </Badge>
-              )}
-            </TableRow>
-          ))}
+          {isProcessing && <RawSkeleton />}
+          {excute.length > 0 &&
+            excute.map((item, index) => (
+              <ExecutingRow key={index} data={item} getExcute={getExcute} />
+            ))}
         </TableBody>
       </Table>
     </article>
   );
 };
 
-export default Signing;
+export default Executing;
