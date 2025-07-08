@@ -84,7 +84,7 @@ const Connect = () => {
     return (
       <div className="min-h-screen bg-gray-100">
         <Header />
-        <div className="mt-16">
+        <div className="mt-16 p-4">
           <div className="max-w-3xl mx-auto py-10">
             <div className="flex justify-between items-center mb-6">
               <Skeleton className="w-52 h-8 rounded-full" />
@@ -136,7 +136,7 @@ const Connect = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
-      <div className="mt-16">
+      <div className="mt-16 p-4">
         <div className="max-w-3xl mx-auto py-10">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">My accounts</h1>
