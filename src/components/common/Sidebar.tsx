@@ -25,9 +25,6 @@ const SIDEBAR_ITEMS = [
   { name: "Home", icon: Home, href: "/" },
   { name: "Payments", icon: Coins, href: "/assets" },
   { name: "Transactions", icon: ArrowUpDown, href: "/transactions" },
-  // { name: "Address book", icon: Contact, href: "/address-book" },
-  // { name: "App", icon: LayoutGrid, href: "/app" },
-  // { name: "Settings", icon: Settings, href: "/settings" },
   { name: "Account", icon: User, href: "/account" },
 ];
 

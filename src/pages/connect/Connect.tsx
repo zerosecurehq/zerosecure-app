@@ -264,9 +264,6 @@ const Connect = () => {
                   <p className="text-gray-500">
                     Connect your wallet to view and manage your accounts.
                   </p>
-                  {/* <Button className="flex items-center gap-2 mx-auto">
-                    <Wallet size={16} /> Connect a wallet
-                  </Button> */}
                 </div>
               ) : (
                 <div>
@@ -280,7 +277,6 @@ const Connect = () => {
               ))}
           </div>
 
-          {/* Import Safe */}
           <div className="mt-6 flex flex-col items-center gap-4">
             <p className="text-gray-600 text-sm font-bold">
               Powered by ZeroSecure

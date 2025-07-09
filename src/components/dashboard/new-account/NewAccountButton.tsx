@@ -71,24 +71,6 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
 
   const handleCreateMultiWallet = async () => {
     try {
-      // setTimeout(async () => {
-      //   console.log({
-      //     owners: [
-      //       publicKey as string,
-      //       ...signerList.map((signer) => signer.address),
-      //     ],
-      //     threshold: Number(threshold),
-      //   });
-      //   const network = WalletAdapterNetwork.TestnetBeta;
-      //   const address = await getRandomAddressFromServer(network);
-      //   const mappingNameParse = JSON.parse(
-      //     localStorage.getItem("mappingName") || "{}"
-      //   );
-      //   mappingNameParse[address] = Object.fromEntries(
-      //     signerList.map((signer) => [signer.address, signer.name])
-      //   );
-      //   localStorage.setItem("mappingName", JSON.stringify(mappingNameParse));
-      // }, 1000);
       if (!walletName) return;
       if (!publicKey) return;
       const network = WalletAdapterNetwork.TestnetBeta;
@@ -251,24 +233,6 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                 {currentStep === 2 && (
                   <>
                     <div className="px-4 py-5 border-b border-gray-300 space-y-2">
-                      {/* <div className="relative w-full">
-                        <Card className="shadow-sm hover:shadow-md transition-shadow border border-gray-200 rounded-lg p-3 pr-8 relative">
-                          <CardHeader className="p-0 mb-1">
-                            <CardTitle className="text-xs font-semibold text-gray-700">
-                              Signer created
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-0 space-y-1">
-                            <p className="text-sm font-medium text-gray-800 truncate">
-                              Signer name: Me
-                            </p>
-                            <p className="text-sm text-gray-500 truncate max-w-md">
-                              Signer wallet:{" "}
-                              {formatAleoAddress(publicKey as string)}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div> */}
                       {signerList.length > 0 &&
                         signerList.map((signer, idx) => (
                           <div key={idx} className="relative w-full">

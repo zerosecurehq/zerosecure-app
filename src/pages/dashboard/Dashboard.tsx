@@ -1,21 +1,16 @@
 import { Link, Outlet } from "react-router-dom";
-import Sidebar from "../../components/common/Sidebar";
 import Header from "../../components/common/Header";
-import SidebarProvider from "./../../components/common/SidebarProvider";
 import useAccount from "@/stores/useAccount";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 
 const Dashboard = () => {
-  const { selectedWallet, publicKey} = useAccount();
+  const { selectedWallet, publicKey } = useAccount();
 
   return (
     <section className="min-h-screen w-full mt-16">
       <Header />
       <div className="flex min-h-screen">
-        {/* <SidebarProvider>
-          <Sidebar />
-        </SidebarProvider> */}
         <div className="flex-1 overflow-y-auto bg-gray-100 mx-auto">
           {selectedWallet && publicKey ? (
             <Outlet />

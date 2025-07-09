@@ -7,11 +7,11 @@ import {
   useGetConfirmChangeGovernanceTicket,
   useGetExecuteChangeGovernanceTicket,
 } from "zerosecurehq-sdk";
-import { ZERO_ADDRESS } from "@/pages/connect/CardWallet";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 import RawSkeleton from "./RawSkeleton";
+import { ZERO_ADDRESS } from "@/utils";
 
 const GovernanceList = () => {
   const { publicKey } = useWallet();

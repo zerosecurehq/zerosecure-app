@@ -1,6 +1,5 @@
 import { Table, TableBody } from "@/components/ui/table";
 import React, { useState } from "react";
-import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,52 +8,6 @@ import { network } from "@/utils";
 import { toast } from "sonner";
 import useToken from "@/stores/useToken";
 import TokenRow from "@/components/dashboard/token/TokenRow";
-
-export const fakeTokens: TokenRecord[] = [
-  {
-    id: "rec1",
-    spent: false,
-    recordName: "record_one",
-    name: "Token A",
-    owner: "aleo1abcd1234567890",
-    program_id: "program_001",
-    data: {
-      amount: "1000",
-      token_id: "token_001",
-      external_authorization_required: "false",
-      authorized_until: "2025-12-31T23:59:59Z",
-    },
-  },
-  {
-    id: "rec2",
-    spent: false,
-    recordName: "record_two",
-    name: "Token B",
-    owner: "aleo1efgh1234567890",
-    program_id: "program_002",
-    data: {
-      amount: "2500",
-      token_id: "token_002",
-      external_authorization_required: "true",
-      authorized_until: "2026-06-30T23:59:59Z",
-    },
-  },
-  {
-    id: "rec3",
-    spent: true,
-    recordName: "record_three",
-    name: "Token C",
-    owner: "aleo1ijkl1234567890",
-    program_id: "program_003",
-    status: "expired",
-    data: {
-      amount: "500",
-      token_id: "token_003",
-      external_authorization_required: "false",
-      authorized_until: "2024-12-01T00:00:00Z",
-    },
-  },
-];
 
 const Token = () => {
   const [tokenId, setTokenId] = useState("");
@@ -102,9 +55,6 @@ const Token = () => {
             >
               Add
             </Button>
-            {/* <Button variant={"outline"} type="submit" disabled={!tokenId.trim()}>
-              See balance
-            </Button> */}
           </form>
 
           <Table className="mt-2">

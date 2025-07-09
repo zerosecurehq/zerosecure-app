@@ -4,8 +4,12 @@ import {
   getMultisigWalletBalance,
   removeVisibleModifier,
 } from "zerosecurehq-sdk";
+import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 
 export const network = WalletAdapterNetwork.TestnetBeta;
+
+export const ZERO_ADDRESS =
+  "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc";
 
 const gradients = [
   "bg-gradient-to-r from-pink-500 to-yellow-500",
@@ -32,6 +36,52 @@ const gradients = [
   "bg-gradient-to-r from-teal-300 to-green-400",
   "bg-gradient-to-r from-yellow-300 to-orange-400",
   "bg-gradient-to-r from-blue-300 to-indigo-400",
+];
+
+export const fakeTokens: TokenRecord[] = [
+  {
+    id: "rec1",
+    spent: false,
+    recordName: "record_one",
+    name: "Token A",
+    owner: "aleo1abcd1234567890",
+    program_id: "program_001",
+    data: {
+      amount: "1000",
+      token_id: "token_001",
+      external_authorization_required: "false",
+      authorized_until: "2025-12-31T23:59:59Z",
+    },
+  },
+  {
+    id: "rec2",
+    spent: false,
+    recordName: "record_two",
+    name: "Token B",
+    owner: "aleo1efgh1234567890",
+    program_id: "program_002",
+    data: {
+      amount: "2500",
+      token_id: "token_002",
+      external_authorization_required: "true",
+      authorized_until: "2026-06-30T23:59:59Z",
+    },
+  },
+  {
+    id: "rec3",
+    spent: true,
+    recordName: "record_three",
+    name: "Token C",
+    owner: "aleo1ijkl1234567890",
+    program_id: "program_003",
+    status: "expired",
+    data: {
+      amount: "500",
+      token_id: "token_003",
+      external_authorization_required: "false",
+      authorized_until: "2024-12-01T00:00:00Z",
+    },
+  },
 ];
 
 export const getRandomGradient = () =>
