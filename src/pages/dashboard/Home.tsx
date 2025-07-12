@@ -28,8 +28,8 @@ const Home = () => {
   return (
     <section className="w-full overflow-auto px-28">
       <div className="p-4"></div>
-      <div className="grid grid-cols-3 gap-3 p-4">
-        <Card className="p-6 col-span-2">
+      <div className="grid lg:grid-cols-3 gap-3 p-4 grid-cols-1">
+        <Card className="p-6 lg:col-span-2 col-span-1">
           <CardContent className="flex items-center justify-between p-0">
             <div>
               <p className="text-sm text-muted-foreground">Current Balance</p>
@@ -38,7 +38,7 @@ const Home = () => {
                 <span>${0}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <DepositButton />
               <NewTransactionButton
                 text="Transfer"

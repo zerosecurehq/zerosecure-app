@@ -41,12 +41,11 @@ import {
   WALLET_MANAGER_PROGRAM_ID,
   ZERO_ADDRESS_HASHED_TO_FIELD,
 } from "zerosecurehq-sdk";
-import { ZERO_ADDRESS } from "../connect/CardWallet";
 import GovernanceRow from "@/components/dashboard/governance/GovernanceRow";
 import { Loader2, UserPlus2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { isArrayChangedById } from "@/utils";
+import { isArrayChangedById, ZERO_ADDRESS } from "@/utils";
 import useAccount from "@/stores/useAccount";
 import Warning from "@/components/ui/Warning";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";

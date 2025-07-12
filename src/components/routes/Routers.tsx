@@ -1,14 +1,10 @@
 import Connect from "@/pages/connect/Connect";
-import AddressBook from "@/pages/dashboard/AddressBook";
 import Apps from "@/pages/dashboard/Apps";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import Governance from "@/pages/dashboard/Governance";
 import Home from "@/pages/dashboard/Home";
-import NeedHelp from "@/pages/dashboard/NeedHelp";
-import Settings from "@/pages/dashboard/Settings";
 import Token from "@/pages/dashboard/Token";
 import Transactions from "@/pages/dashboard/Transactions";
-import WhatNew from "@/pages/dashboard/WhatNew";
 import useAccount from "@/stores/useAccount";
 import useToken, { TOKEN_LOCAL_KEY } from "@/stores/useToken";
 import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
@@ -88,11 +84,7 @@ const Routers = () => {
         <Route element={<Dashboard />}>
           <Route index element={<Home />} />
           <Route path="transactions" element={<Transactions />} />
-          <Route path="address-book" element={<AddressBook />} />
-          <Route path="app" element={<Apps />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="what-new" element={<WhatNew />} />
-          <Route path="need-help" element={<NeedHelp />} />
+          <Route path="app" element={<Apps />} />s
           <Route path="governance" element={<Governance />} />
           <Route path="token" element={<Token />} />
         </Route>
