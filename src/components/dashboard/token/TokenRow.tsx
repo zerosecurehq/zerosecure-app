@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import useAccount from "@/stores/useAccount";
-import { formatField } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -52,10 +51,15 @@ const TokenRow = ({ token, handleDelete }: TokenRowProps) => {
 
   return (
     <TableRow className="text-center">
-      <TableCell>
-        {token.name || `No name`} ({token.symbol})
+      <TableCell className="text-gray-500 font-semibold">
+        #{token.token_id}
       </TableCell>
-      <TableCell>{formatField(token.token_id)}</TableCell>
+      <TableCell>
+        {token.name || `No name`}
+        <span className="ml-2 inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset">
+          {token.symbol}
+        </span>
+      </TableCell>
       <TableCell>
         {tokenBalance} {token.symbol}
       </TableCell>

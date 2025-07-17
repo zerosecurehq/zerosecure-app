@@ -25,38 +25,61 @@ const Token = () => {
       setTokenId("");
       return;
     }
-    const infoToken = await getTokenMetadata(network, tokenId);
-    if (infoToken) {
-      addTokens([infoToken]);
-      setTokenId("");
+    try {
+      // Allow both field and non-field token IDs
+      let shawdowedTokenId = tokenId.includes("field")
+        ? tokenId
+        : `${tokenId}field`;
+      // Validate the token ID format
+      if (!shawdowedTokenId.match(/^\d+field$/)) {
+        return toast.error(
+          "Invalid token ID format. It should be a number followed by 'field'."
+        );
+      }
+      const infoToken = await getTokenMetadata(network, shawdowedTokenId);
+
+      if (infoToken) {
+        addTokens([infoToken]);
+        setTokenId("");
+      }
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Mapping not found")
+      ) {
+        toast.error("Token cannot be found, please check the token id.");
+      }
     }
   };
 
   return (
     <section className="w-full overflow-auto px-28">
       <div className="py-4"></div>
-
       <Card>
         <CardContent className="pt-6">
-          <form
-            onSubmit={handleSubmit}
-            className="flex items-center gap-2 justify-end"
-          >
-            <Input
-              value={tokenId}
-              onChange={(e) => setTokenId(e.target.value)}
-              placeholder="Enter token id"
-              className="w-1/4"
-            />
-            <Button
-              variant={"outline"}
-              type="submit"
-              disabled={!tokenId.trim()}
+          <div className="flex w-100">
+            <div>
+              <span className="font-semibold">Your Tokens</span>
+            </div>
+            <form
+              onSubmit={handleSubmit}
+              className="flex items-center gap-2 justify-end flex-1"
             >
-              Add
-            </Button>
-          </form>
-
+              <Input
+                value={tokenId}
+                onChange={(e) => setTokenId(e.target.value)}
+                placeholder="Enter token id (eg. 1234field)"
+                className="w-1/4"
+              />
+              <Button
+                variant={"outline"}
+                type="submit"
+                disabled={!tokenId.trim()}
+              >
+                Add
+              </Button>
+            </form>
+          </div>
           <Table className="mt-2">
             <TableBody>
               {tokens.length > 0 &&
