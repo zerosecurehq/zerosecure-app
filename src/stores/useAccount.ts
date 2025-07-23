@@ -12,7 +12,7 @@ export interface ExtendedWalletRecord extends WalletRecord {
 
 export interface AccountState {
   publicKey: string | null;
-  setPublicKey: (key: string) => void;
+  loadFromLocal: (publicKey: string) => void;
   wallets: ExtendedWalletRecord[];
   pinnedWallets: ExtendedWalletRecord[];
   selectedWallet: ExtendedWalletRecord | null;
@@ -29,9 +29,9 @@ const useAccount = create<AccountState>((set) => ({
   pinnedWallets: [],
   selectedWallet: null,
 
-  setPublicKey: (key) => {
-    const accountData = getStoredAccountFromLocal(key);
-    set({ publicKey: key, ...accountData });
+  loadFromLocal: (publicKey) => {
+    const accountData = getStoredAccountFromLocal(publicKey);
+    set({ publicKey, ...accountData });
   },
 
   setWallets: (wallets) => {

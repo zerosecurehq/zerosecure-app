@@ -12,8 +12,9 @@ import {
 import { WalletProvider } from "@demox-labs/aleo-wallet-adapter-react";
 import { WalletModalProvider } from "@demox-labs/aleo-wallet-adapter-reactui";
 import { Toaster } from "./components/ui/sonner";
-import Routers from "./components/routes/Routers";
+import Routers from "./routes/Routers";
 import { ALL_PROGRAM_IDS } from "zerosecurehq-sdk";
+import AccountProvider from "./providers/AccountProvider";
 const App = () => {
   const wallets = useMemo(
     () => [
@@ -47,10 +48,12 @@ const App = () => {
       autoConnect
     >
       <WalletModalProvider>
-        <main className="min-h-screen">
-          <Routers />
-        </main>{" "}
-        <Toaster />
+        <AccountProvider>
+          <main className="min-h-screen">
+            <Routers />
+          </main>
+          <Toaster />
+        </AccountProvider>
       </WalletModalProvider>
     </WalletProvider>
   );
