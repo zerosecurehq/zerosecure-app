@@ -212,6 +212,7 @@ const NewAccountButton = ({ reset: resetGetWallet }: { reset: () => void }) => {
                         </div>
 
                         <div className="flex space-x-1.5 items-center">
+                          {/* Todo: Add logic to check if the user has read the terms */}
                           <Checkbox />
                           <p className="text-sm">
                             By continuing, you agreee to our{" "}

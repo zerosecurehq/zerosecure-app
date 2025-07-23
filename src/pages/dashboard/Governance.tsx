@@ -73,7 +73,7 @@ const Governance = () => {
     Array<{ name: string; address: string }>
   >([]);
   const { createChangeGovernance, error, isProcessing, reset } =
-    useCreateChangeGovernance();
+    useCreateChangeGovernance({ feePrivate: false });
   const {
     createChangeRole,
     error: changeRoleError,
@@ -135,6 +135,7 @@ const Governance = () => {
       parseInt(newThreshold) !== parseInt(selectedWallet.data.threshold);
     if (!isChanged) return toast.error("No changes detected");
     toast.info("Please wait while we prepare your transaction...");
+    console.log(selectedWallet);
     const txIdHash = await createChangeGovernance(
       selectedWallet,
       [...newSignerList.map((item) => removeVisibleModifier(item.address))],
@@ -362,7 +363,10 @@ const Governance = () => {
                       id="name"
                       className="col-span-3"
                       onChange={(e) =>
-                        setNewSigner({ ...newSigner, name: e.target.value })
+                        setNewSigner({
+                          ...newSigner,
+                          name: e.target.value,
+                        })
                       }
                     />
                   </div>
@@ -374,7 +378,10 @@ const Governance = () => {
                       id="wallet"
                       className="col-span-3"
                       onChange={(e) =>
-                        setNewSigner({ ...newSigner, address: e.target.value })
+                        setNewSigner({
+                          ...newSigner,
+                          address: e.target.value,
+                        })
                       }
                     />
                   </div>
@@ -474,7 +481,10 @@ const Governance = () => {
                       id="name"
                       className="col-span-3"
                       onChange={(e) =>
-                        setNewManager({ ...newManager, name: e.target.value })
+                        setNewManager({
+                          ...newManager,
+                          name: e.target.value,
+                        })
                       }
                     />
                   </div>

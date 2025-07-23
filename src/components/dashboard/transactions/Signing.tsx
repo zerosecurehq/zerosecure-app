@@ -45,7 +45,8 @@ const Signing = () => {
     <article>
       <Table>
         <TableCaption className="caption-top text-sm">
-          Your signing transactions will be listed here.
+          If you have any signing tickets, you can apply them here. Open the
+          wallet to make it able to scan the signing tickets.
         </TableCaption>
         <TableBody>
           {isProcessing && <RawSkeleton />}

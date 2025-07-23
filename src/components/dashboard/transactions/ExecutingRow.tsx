@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import useAccount from "@/stores/useAccount";
-import { formatAleoAddress } from "@/utils";
+import { formatAleoAddress, microCreditsToCredits } from "@/utils";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -11,7 +11,6 @@ import {
   CREDITS_TOKEN_ID,
   ExecuteTicketRecord,
   getCurrentTransactionConfirmations,
-  removeContractDataType,
   removeVisibleModifier,
   useApplyExecuteTicket,
 } from "zerosecurehq-sdk";
@@ -72,7 +71,7 @@ const ExecutingRow = ({ data, getExcute }: ExecutingRowProps) => {
         {formatAleoAddress(removeVisibleModifier(data.data.to))}
       </TableCell>
       <TableCell>
-        {removeVisibleModifier(removeContractDataType(data.data.amount))}{" "}
+        {microCreditsToCredits(parseInt(data.data.amount))}{" "}
         {isCreditsTransaction ? "credits" : "tokens"}
       </TableCell>
       <TableCell>

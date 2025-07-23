@@ -36,7 +36,8 @@ const Executing = () => {
     <article>
       <Table>
         <TableCaption className="caption-top text-sm">
-          Your execute transactions will be listed here.
+          If you have any execute tickets, you can apply them here. Open the
+          wallet to make it able to scan the execute tickets.
         </TableCaption>
         <TableBody>
           {isProcessing && <RawSkeleton />}

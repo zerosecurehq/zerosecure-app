@@ -75,7 +75,8 @@ const GovernanceList = () => {
     <article>
       <Table>
         <TableCaption className="caption-top text-sm">
-          Your governance change request will be listed here.
+          If you have any governance tickets, you can apply them here. Open the
+          wallet to make it able to scan the governance tickets.
         </TableCaption>
         <TableBody>
           {(isProcessingConfirm || isProcessingExcute) && <RawSkeleton />}
