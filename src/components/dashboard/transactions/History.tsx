@@ -1,72 +1,57 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-
-const transactions = [
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: "3",
-    signed: "2",
-  },
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: "3",
-    signed: "2",
-  },
-  {
-    to: "aleo12a...ss2s",
-    amount: "12.12 Aleo",
-    time: "Mar 16, 2025 13:42:56",
-    signers: "3",
-    signed: "2",
-  },
-  // {
-  //   action: "Smart Contract Deployed",
-  //   createdBy: "0x2F8D...C3E4",
-  //   time: "11:20 AM",
-  //   status: "Success",
-  // },
-  // {
-  //   action: "Liquidity Added",
-  //   createdBy: "0x55AA...FF99",
-  //   time: "1:45 PM",
-  //   status: "Pending",
-  // },
-  // {
-  //   action: "Vote Submitted",
-  //   createdBy: "0x7B3E...11DD",
-  //   time: "3:30 PM",
-  //   status: "Failed",
-  // },
-];
+import { WalletRecord, useGetTransferHistory } from "zerosecurehq-sdk";
+import useAccount from "@/stores/useAccount";
 
 const History = () => {
+  const { selectedWallet } = useAccount();
+  const { history, isLoading, error, fetchTransferHistory } =
+    useGetTransferHistory({
+      walletRecord: selectedWallet as WalletRecord,
+    });
+
+  useEffect(() => {
+    fetchTransferHistory();
+  }, [fetchTransferHistory]);
+
+  if (isLoading) {
+    return <p className="text-center text-sm text-muted">Loading history...</p>;
+  }
+
+  if (error) {
+    return (
+      <p className="text-center text-sm text-red-500">Error: {error.message}</p>
+    );
+  }
+
   return (
     <article>
       <Table>
-        {/* <TableCaption className="caption-top text-sm">
-          A list of your history transactions.
-        </TableCaption> */}
         <TableBody>
-          {/* {isProcessing && <RawSkeleton />} */}
-          {transactions.map((transaction, index) => (
-            <TableRow key={index} className="text-center relative">
-              <TableCell className="font-medium">{transaction.to}</TableCell>
-              <TableCell>{transaction.amount}</TableCell>
-              <TableCell>{transaction.time}</TableCell>
-              <TableCell>
-                <span className="font-semibold text-sm">Finalized</span>
-              </TableCell>
-              <TableCell>
-                <Button variant={"outline"} className="">
-                  Sign Transaction
-                </Button>
+          {history.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center text-sm text-muted">
+                No transactions yet
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            history.map((tx, index) => (
+              <TableRow key={tx.transferId || index} className="text-center">
+                <TableCell className="font-medium">{tx.to}</TableCell>
+                <TableCell>{tx.amount} Aleo</TableCell>
+                <TableCell>{new Date(tx.timestamp).toLocaleString()}</TableCell>
+                <TableCell>
+                  <span className="font-semibold text-sm capitalize">
+                    {tx.status}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Button variant="outline">Sign Transaction</Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </article>

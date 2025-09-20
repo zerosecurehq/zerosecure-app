@@ -1,8 +1,13 @@
 export * from "./storage";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
 import {
+  encryptExecuteTransaction,
+  ExecuteTicketRecord,
   getMultisigWalletBalance,
   removeVisibleModifier,
+  TransferHistoryRecord,
+  WalletRecord,
+  ZEROSECURE_BACKEND_URL,
 } from "zerosecurehq-sdk";
 import { TokenRecord } from "zerosecurehq-sdk/dist/useGetTokenRecord";
 
@@ -168,3 +173,47 @@ export const getRemovedOwners = (
     .map((addr) => removeVisibleModifier(addr));
   return removedOwners;
 };
+
+export async function saveTransferToDB(
+  record: TransferHistoryRecord,
+  walletRecord: WalletRecord,
+  publicKey: string,
+  isInitiator: boolean = false,
+  network: WalletAdapterNetwork = WalletAdapterNetwork.TestnetBeta
+) {
+  try {
+    let encryptedData: string | undefined;
+
+    if (isInitiator) {
+      encryptedData = encryptExecuteTransaction(walletRecord, {
+        data: {
+          to: record.to,
+          amount: record.amount,
+          wallet_address: walletRecord.data.wallet_address,
+          transfer_id: record.transferId,
+        },
+      } as ExecuteTicketRecord);
+    }
+
+    const response = await fetch(
+      `${ZEROSECURE_BACKEND_URL}/${network}/transactions/saveTransfer`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...record,
+          encryptedData,
+          publicKey,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw new Error(`Failed to save transfer: ${error}`);
+  }
+}

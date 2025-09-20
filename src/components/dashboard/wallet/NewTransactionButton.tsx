@@ -27,6 +27,8 @@ import {
   creditsToMicroCredits,
   formatAleoAddress,
   microCreditsToCredits,
+  network,
+  saveTransferToDB,
 } from "@/utils";
 import {
   Select,
@@ -39,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import useToken from "@/stores/useToken";
 import { WalletAdapterNetwork } from "@demox-labs/aleo-wallet-adapter-base";
+import { useWallet } from "@demox-labs/aleo-wallet-adapter-react";
 
 const Page1 = ({
   tokens,
@@ -266,6 +269,7 @@ const NewTransactionButton = ({
   text?: string;
   className?: string;
 }) => {
+  const { publicKey } = useWallet();
   const [step, setStep] = useState(1);
   const [feeType, setFeeType] = useState<"public" | "private">("private");
   const { selectedWallet } = useAccount();
@@ -281,23 +285,43 @@ const NewTransactionButton = ({
   const [openTransfer, setOpenTransfer] = useState(false);
 
   const handleCreateTransaction = async () => {
-    if (!selectedWallet) return;
+    if (!selectedWallet || !publicKey) return;
     const { avatar, ...walletWithoutAvatar } = selectedWallet;
 
-    const txHash = await createTransaction(
-      walletWithoutAvatar,
-      typeRecord === "credits" ? CREDITS_TOKEN_ID : tokenSelected,
-      recipient,
-      creditsToMicroCredits(amount)
-    );
+    try {
+      const txHash = await createTransaction(
+        walletWithoutAvatar,
+        typeRecord === "credits" ? CREDITS_TOKEN_ID : tokenSelected,
+        recipient,
+        creditsToMicroCredits(amount)
+      );
 
-    if (txHash) {
-      reset();
-      setAmount(0);
-      toast.success("Create transaction successfully");
-      setRecipient("");
-      setTokenSelected("");
-      setOpenTransfer(false);
+      if (txHash) {
+        await saveTransferToDB(
+          {
+            from: walletWithoutAvatar.data.wallet_address,
+            to: recipient,
+            amount: amount.toString(),
+            transferId: txHash,
+            timestamp: Date.now(),
+            status: "pending",
+          },
+          walletWithoutAvatar,
+          publicKey,
+          true,
+          network
+        );
+
+        reset();
+        setAmount(0);
+        toast.success("Create transaction successfully");
+        setRecipient("");
+        setTokenSelected("");
+        setOpenTransfer(false);
+      }
+    } catch (error) {
+      console.error("Transaction failed:", error);
+      toast.error("Transaction failed");
     }
   };
 
