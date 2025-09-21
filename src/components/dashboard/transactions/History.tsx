@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { WalletRecord, useGetTransferHistory } from "zerosecurehq-sdk";
 import useAccount from "@/stores/useAccount";
+import RawSkeleton from "./RawSkeleton";
 
 const History = () => {
   const { selectedWallet } = useAccount();
@@ -16,7 +17,7 @@ const History = () => {
   }, [fetchTransferHistory]);
 
   if (isLoading) {
-    return <p className="text-center text-sm text-muted">Loading history...</p>;
+    return <RawSkeleton />;
   }
 
   if (error) {

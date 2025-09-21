@@ -195,6 +195,12 @@ export async function saveTransferToDB(
       } as ExecuteTicketRecord);
     }
 
+    if (!encryptedData) {
+      throw new Error(
+        "Failed to generate encryptedData: encryption process returned empty result"
+      );
+    }
+    
     const response = await fetch(
       `${ZEROSECURE_BACKEND_URL}/${network}/transactions/saveTransfer`,
       {
