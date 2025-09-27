@@ -16,10 +16,6 @@ const History = () => {
     fetchTransferHistory();
   }, [fetchTransferHistory]);
 
-  if (isLoading) {
-    return <RawSkeleton />;
-  }
-
   if (error) {
     return (
       <p className="text-center text-sm text-red-500">Error: {error.message}</p>
@@ -30,6 +26,7 @@ const History = () => {
     <article>
       <Table>
         <TableBody>
+          {isLoading && <RawSkeleton />}
           {history.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5} className="text-center text-sm text-muted">
