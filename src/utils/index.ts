@@ -196,11 +196,9 @@ export async function saveTransferToDB(
     }
 
     if (!encryptedData) {
-      throw new Error(
-        "Failed to generate encryptedData: encryption process returned empty result"
-      );
+      throw new Error("Encryption failed: empty encryptedData");
     }
-    
+
     const response = await fetch(
       `${ZEROSECURE_BACKEND_URL}/${network}/transactions/saveTransfer`,
       {
@@ -215,11 +213,12 @@ export async function saveTransferToDB(
     );
 
     if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+      const errText = await response.text();
+      throw new Error(`Backend error ${response.status}: ${errText}`);
     }
 
     return await response.json();
-  } catch (error) {
-    throw new Error(`Failed to save transfer: ${error}`);
+  } catch (error: any) {
+    throw new Error(`Failed to save transfer: ${error.message}`);
   }
 }
